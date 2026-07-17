@@ -1,20 +1,3 @@
-"""
-gnn.py — Graph Neural Network sui chunk (GAT + readout).
-
-Stessa cache, stessa testa condivisa del MIL. L'UNICA differenza rispetto al MIL
-e l'aggregazione: qui i chunk NON sono un insieme non ordinato, sono i nodi di un
-grafo, e si scambiano informazione lungo gli archi (message passing) PRIMA di
-essere aggregati. Se la GNN batte il MIL, il merito e degli ARCHI (la struttura).
-
-Nodi     : i chunk del documento, feature = embedding frozen dalla cache.
-Archi    : costruiti da build_edges() — ABLATION centrale:
-             - "sequential" : i->i+1 (l'ordine del testo)
-             - "knn"        : k vicini piu simili nello spazio embedding (cosine)
-             - "both"       : unione dei due
-Encoder  : GATConv (attenzione sugli archi) x L layer.
-Readout  : global attention pooling -> vettore-documento (analogo del bag MIL).
-"""
-
 from __future__ import annotations
 
 import torch
@@ -31,11 +14,7 @@ def build_edges(
     mode: str = "sequential",
     knn_k: int = 5,
 ) -> Tensor:
-    """Costruisce edge_index (2, E) per un documento di `num_nodes` chunk.
-
-    Ritorna archi NON diretti (ogni collegamento in entrambi i versi), come e
-    convenzione per GAT. Con 0 o 1 nodo non ci sono archi (tensore vuoto).
-    """
+    
     if num_nodes <= 1:
         return torch.empty((2, 0), dtype=torch.long)
 
@@ -67,13 +46,6 @@ def build_edges(
 
 
 class GNNModel(nn.Module):
-    """GAT multi-layer + global attention pooling + testa condivisa.
-
-    forward processa UN documento alla volta (i suoi nodi e archi). Come il MIL,
-    ritorna (logits, node_weights): i pesi del readout sono l'analogo interpretativo
-    dei pesi di attenzione del MIL — quali nodi hanno pesato nel vettore-documento.
-    """
-
     def __init__(
         self,
         in_dim: int,
