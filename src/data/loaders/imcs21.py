@@ -1,23 +1,3 @@
-"""
-loaders/imcs21.py — Loader per IMCS-21 (consulti medici cinesi).
-
-Verificato sui file reali (train/dev/test.json). Ogni record e un dict indicizzato
-da example_id con chiavi:
-    diagnosis      : str  -> una delle 10 malattie pediatriche (label multi-classe)
-    self_report    : str  -> auto-anamnesi del paziente (x0)
-    dialogue       : list -> turni; ogni turno ha speaker ('医生'/'患者') e 'sentence'
-    explicit_info  : dict -> sintomi espliciti (NON usato per il testo)
-    implicit_info  : dict -> sintomi impliciti  (NON usato per il testo)
-    report         : list -> 2 referti di riferimento (annotazione, NON usata come input)
-
-Split ufficiale: train 2472 / dev 833 / test 811, tutti CON label diagnosis.
-(test_input.json e la versione SENZA label per la submission: non lo usiamo.)
-
-Testo prodotto: self_report + turni (speaker 医生/患者 -> DOCTOR:/PATIENT:), in ordine.
-Il testo resta in CINESE -> encoder BERT cinese; il chunker usa quel tokenizer.
-Label: stringa malattia -> indice 0..9 via DiseaseVocab persistito su disco.
-"""
-
 from __future__ import annotations
 
 import json
@@ -80,11 +60,7 @@ def load_imcs21(
     splits: tuple[str, ...] = ("train", "dev", "test"),
     speaker_markers: bool = True,
 ) -> list[Document]:
-    """Carica IMCS-21 come lista di Document.
-
-    root: cartella con train.json / dev.json / test.json.
-    Usa test.json (CON label), non test_input.json.
-    """
+    
     root = Path(root)
     split_files = {"train": "train.json", "dev": "dev.json", "test": "test.json"}
 
@@ -135,5 +111,4 @@ def load_imcs21(
 
 
 def id_to_disease(idx: int) -> str:
-    """Utility inversa per interpretare le predizioni."""
     return DISEASES[idx]
