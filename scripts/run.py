@@ -1,29 +1,3 @@
-"""
-run.py — Orchestratore della matrice di esperimenti.
-
-Genera il prodotto cartesiano (modelli x granularita x seed) per un dataset, lancia
-train_one su ciascuna cella, e AGGREGA i risultati (media +- std sui seed). E' il
-livello sopra train_one: train_one esegue UN esperimento, run.py ne esegue tanti e
-li riassume in modo statisticamente onesto.
-
-Perche aggregare sui seed: come visto su DAIC, un singolo run e dominato dal rumore.
-Media e std su piu seed distinguono il segnale (differenza reale tra modelli) dal
-rumore (varianza tra inizializzazioni/split).
-
-Idempotenza: salta le celle il cui result.json esiste gia (riprende una matrice
-interrotta senza rifare il lavoro). --overwrite per forzare.
-
-Esempi:
-    # matrice completa su DAIC: 3 modelli x 3 granularita x 3 seed = 27 run
-    python scripts/run.py --dataset daic --task binary \\
-        --encoder mental/mental-bert-base-uncased \\
-        --models mil gnn whole_text --granularities 64 128 256 --seeds 42 43 44
-
-    # solo MIL vs GNN, una granularita, 5 seed
-    python scripts/run.py --dataset daic --task binary \\
-        --models mil gnn --granularities 128 --seeds 42 43 44 45 46
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -37,7 +11,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.training.loop import ExperimentConfig, train_one  # noqa: E402
+from src.training.loop import ExperimentConfig, train_one
 
 
 def parse_args() -> argparse.Namespace:
@@ -69,10 +43,6 @@ def parse_args() -> argparse.Namespace:
 
 
 def build_configs(args) -> list[ExperimentConfig]:
-    """Genera la lista di ExperimentConfig del prodotto cartesiano.
-
-    Nota: edge_modes si applica SOLO alla GNN. MIL e whole-text ignorano gli archi,
-    quindi per loro non moltiplichiamo per edge_modes (eviteremmo run duplicati)."""
     base = ExperimentConfig(
         dataset=args.dataset, model="mil", task=args.task, num_classes=args.num_classes,
         encoder=args.encoder, max_epochs=args.max_epochs, patience=args.patience,
@@ -92,26 +62,19 @@ def build_configs(args) -> list[ExperimentConfig]:
                                    overlap=chunk // 8, seed=seed))
     return configs
 
-
 def result_exists(cfg: ExperimentConfig) -> bool:
     return (Path(cfg.results_root) / cfg.run_name() / "result.json").exists()
-
 
 def load_result(cfg: ExperimentConfig) -> dict:
     return json.loads((Path(cfg.results_root) / cfg.run_name() / "result.json").read_text())
 
-
 def aggregate(results: list[dict]) -> dict:
-    """Aggrega per gruppo (stesso setup, seed diversi): media e std di ogni metrica.
-
-    La chiave di gruppo e il run_name SENZA il pezzo del seed, cosi i run che
-    differiscono solo per seed finiscono insieme."""
     groups: dict[str, list[dict]] = {}
     for r in results:
         # rimuovi '_seed{n}' dalla chiave di raggruppamento
         name = r["run_name"]
         key = name.rsplit("_seed", 1)[0] + (name.split("_seed", 1)[1][2:] if "_seed" in name else "")
-        # ^ tiene un eventuale suffisso (es. _sequential della gnn) dopo il seed
+        # tiene un eventuale suffisso (es. _sequential della gnn) dopo il seed
         key = _group_key(name)
         groups.setdefault(key, []).append(r)
 
@@ -131,8 +94,6 @@ def aggregate(results: list[dict]) -> dict:
 
 
 def _group_key(run_name: str) -> str:
-    """run_name = dataset_model_g{chunk}_seed{seed}[_edgemode].
-    Rimuove il solo '_seed{n}' e ricompone, cosi i seed collassano nel gruppo."""
     parts = run_name.split("_")
     return "_".join(p for p in parts if not p.startswith("seed"))
 
@@ -155,9 +116,7 @@ def main() -> None:
 
     # aggregazione e stampa del riassunto
     summary = aggregate(all_results)
-    print("\n" + "=" * 70)
     print("RIASSUNTO (media +- std sui seed)")
-    print("=" * 70)
     for group, metrics in summary.items():
         print(f"\n{group}   (n={list(metrics.values())[0]['n']} seed)")
         for m, stats in metrics.items():
