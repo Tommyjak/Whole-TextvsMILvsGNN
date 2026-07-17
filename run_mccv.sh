@@ -1,34 +1,4 @@
 #!/usr/bin/env bash
-#
-# run_all.sh — Orchestratore di tutti gli esperimenti del progetto
-#              "Side by Side: MIL vs GNN vs Whole-Text".
-#
-# Per ogni dataset:
-#   1. PRECOMPUTE degli embedding frozen (MIL/GNN) a piu' granularita (64, 128)
-#   2. TRAINING con run.py SEPARATO per ciascun modello (mil, gnn, whole_text)
-#
-# Granularita:
-#   - mil/gnn  -> ablation su GRANS (64 128): run.py fa il prodotto seed x granularita
-#   - whole_text -> UNA sola granularita (GRAN_WT): il whole-text ignora il chunking,
-#     quindi lanciarlo su piu' granularita creerebbe run IDENTICI con nomi diversi
-#     (spreco puro). Un valore solo basta.
-#
-# Logica di scala (vedi NOTA su ECtHR piu' sotto):
-#   - dataset corti (daic, imcs21, mtsamples):
-#       whole-text = BERT@512 ; chunk MIL/GNN = 64/128 ; stesso encoder -> confronto pulito
-#   - dataset lungo (ecthr):
-#       whole-text = Longformer@4096 ; chunk MIL/GNN = vedi GRANS_ECTHR
-#
-# USO:
-#   ./run_all.sh                      # tutti i dataset
-#   ./run_all.sh daic ecthr           # solo quelli elencati
-#   SEEDS="42 43" ./run_all.sh        # override seed (default 42..46)
-#   GRANS_SHORT="64 128 256" ./run_all.sh   # override granularita
-#
-# NOTE:
-#   - virtualenv ATTIVO; idealmente GPU (ECtHR + Longformer e' pesante su CPU).
-#   - run.py e' idempotente: rilanciando, salta le celle gia' calcolate.
-#   - lo script NON si ferma al primo errore: logga, continua, riepiloga alla fine.
 
 set -uo pipefail
 
@@ -230,24 +200,3 @@ fi
 #
 # Se un giorno volessi l'ablation di granularita ANCHE su ECtHR (per studiare
 # l'effetto della grana sui documenti lunghi), imposta p.es. GRANS_ECTHR="256 512".
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# tutti e tre i modelli di DAIC in CV, 10 fold (= 10 seed generati)
-python3 scripts/run.py --dataset daic --task binary --encoder mental/mental-bert-base-uncased \
-    --models mil --granularities 64 128 --seeds 42 43 44 45 46 47 48 49 50 51 --cv
-python3 scripts/run.py --dataset daic --task binary --encoder mental/mental-bert-base-uncased \
-    --models gnn --granularities 64 128 --seeds 42 43 44 45 46 47 48 49 50 51 --cv
-python3 scripts/run.py --dataset daic --task binary --encoder mental/mental-bert-base-uncased \
-    --models whole_text --granularities 64 --seeds 42 43 44 45 46 47 48 49 50 51 --cv --lr 2e-5 --max-length 512
