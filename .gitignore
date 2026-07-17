@@ -1,0 +1,38 @@
+# Dati sensibili / voluminosi — mai su remote
+# (DAIC-WOZ è sotto data use agreement: vietata la ridistribuzione)
+datasets/
+cache/
+
+# Output degli esperimenti (84M+, rigenerabili)
+results/
+
+# Ambiente virtuale (5.4G)
+venv_pipeline/
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Modelli / pesi / embeddings
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.npy
+*.npz
+*.pkl
+
+# Segreti
+.env
+*.key
+
+# Claude Code (impostazioni locali)
+.claude/settings.local.json
+
+# OS / editor
+.DS_Store
+*.swp
