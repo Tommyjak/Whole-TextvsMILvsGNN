@@ -1,27 +1,3 @@
-"""
-metrics.py — Metriche di valutazione CONDIVISE dai tre modelli.
-
-Riceve logit + label e calcola le metriche, IDENTICHE per MIL, GNN e whole-text.
-Come heads.py, e un perno dell'equita: se i tre modelli fossero valutati con
-metriche diverse, il confronto sarebbe falsato a monte.
-
-Un'unica astrazione per i tre task:
-  - "binary"     (DAIC)                 -> soglia 0.5 su sigmoid(logit)
-  - "multiclass" (IMCS 10, MTSamples 9) -> argmax su softmax(logit)
-  - "multilabel" (ECtHR)                -> soglia 0.5 per-classe su sigmoid(logit)
-
-Metriche primarie (robuste allo sbilanciamento, come da design):
-  F1 (macro), AUROC, AUPRC (average precision), MCC, balanced accuracy,
-  piu accuracy come riferimento. torchmetrics gestisce internamente la logica
-  per task via il parametro `task`.
-
-Uso tipico (dentro il LightningModule):
-    metrics = build_metrics(task="binary", num_classes=None)   # una volta
-    metrics.update(logits, targets)                             # a ogni batch
-    results = metrics.compute()                                 # a fine epoca
-    metrics.reset()                                             # prima della prossima
-"""
-
 from __future__ import annotations
 
 import torch
@@ -44,11 +20,7 @@ def build_metrics(
     num_classes: int | None = None,
     prefix: str = "",
 ) -> MetricCollection:
-    """Costruisce la collezione di metriche adatta al task.
-
-    prefix: prepende una stringa ai nomi (es. 'val/' o 'test/') per separare gli
-    split nei log. torchmetrics accumula lo stato tra update e lo riduce in compute.
-    """
+    
     if task == "binary":
         tm_task = "binary"
         kwargs = {"task": tm_task}
@@ -96,15 +68,7 @@ def prepare_for_metrics(
     targets: Tensor,
     task: str,
 ) -> tuple[Tensor, Tensor]:
-    """Adatta logit e target ai formati che torchmetrics si aspetta.
-
-    torchmetrics vuole:
-      - binary     : preds = prob (o logit) shape (B,);  target = int (B,)
-      - multiclass : preds = logit (B, C);               target = int (B,)
-      - multilabel : preds = prob (o logit) (B, C);      target = int (B, C)
-    Le metriche threshold-free (AUROC/AUPRC) usano la confidenza continua, quindi
-    passiamo i LOGIT/probabilita, non le predizioni gia soglia.
-    """
+    
     if task == "binary":
         # logits (B,1) -> (B,); target (B,1) float -> (B,) int
         preds = logits.squeeze(-1)

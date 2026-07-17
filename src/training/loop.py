@@ -1,19 +1,3 @@
-"""
-loop.py — Orchestratore di un singolo esperimento.
-
-train_one(config) fa l'intera trafila per UNA cella della matrice:
-  seed -> loader -> split -> Dataset+DataLoader giusti per il modello ->
-  modello -> LightningModule -> Trainer (early stopping + checkpoint) ->
-  fit -> test sul best checkpoint -> ritorna le metriche.
-
-Un registry incapsula le differenze tra i tre modelli (quale Dataset, quale
-LightningModule, quali iperparametri), cosi chi chiama train_one non deve
-conoscere i dettagli: cambia una stringa nel config e cambia l'esperimento.
-
-Il config e un dataclass ExperimentConfig: tutto cio che definisce un esperimento
-vive li, esplicito e serializzabile (finisce nei risultati per riproducibilita).
-"""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
@@ -37,47 +21,43 @@ from src.models.heads import logits_to_probs
 from src.training.lit_module import MILLitModule, GNNLitModule, WholeTextLitModule
 from src.models.heads import compute_class_weights
 
-
-# ============================== configurazione ==============================
-
 @dataclass
 class ExperimentConfig:
-    # --- identita dell'esperimento ---
-    dataset: str                      # "daic" | "imcs21" | "mtsamples" | "ecthr"
-    model: str                        # "mil" | "gnn" | "whole_text"
-    task: str                         # "binary" | "multiclass" | "multilabel"
-    num_classes: int | None = None    # None per binary
+    # esperimento
+    dataset: str
+    model: str                      
+    task: str
+    num_classes: int | None = None
 
-    # --- dati ---
+    # dati
     datasets_root: str = "datasets"
     cache_root: str = "cache"
-    encoder: str = "bert-base-uncased"   # per la chiave di cache e per whole-text
-    chunk_size: int = 128                # granularita (per MIL/GNN: chiave di cache)
+    encoder: str = "bert-base-uncased"
+    chunk_size: int = 128
     overlap: int = 16
     cv: bool = False
     n_folds: int = 1
 
-    # --- training ---
+    # training
     seed: int = 42
     max_epochs: int = 50
-    patience: int = 5                    # early stopping
+    patience: int = 5
     batch_size: int = 8
     lr: float = 1e-3
-    balance: bool = True                 # calcola pos_weight/class_weight dal train
+    balance: bool = True
     weight_decay: float = 1e-4
-    max_length: int = 512                # per whole-text
+    max_length: int = 512
 
-    # --- GNN-specifici ---
-    edge_mode: str = "sequential"        # "sequential" | "knn" | "both"
+    # GNN-specifici
+    edge_mode: str = "sequential"
     knn_k: int = 5
 
-    # --- output ---
+    # output
     results_root: str = "results"
-    monitor: str = "val/f1"              # metrica su cui fare early stopping / best
+    monitor: str = "val/f1"
     monitor_mode: str = "max"
 
     def __post_init__(self):
-        """Aggiusta dinamicamente la metrica di monitoraggio in base al task."""
         # Se l'utente non ha sovrascitto manualmente il monitor, lo correggiamo per multiclass/multilabel
         if self.monitor == "val/f1" and self.task in ("multiclass", "multilabel"):
             self.monitor = "val/f1_macro"
@@ -90,11 +70,7 @@ class ExperimentConfig:
             base += "_cv"          # distingue i run CV da quelli con split ufficiale
         return base
 
-
-# ============================== registry loader ==============================
-
 def _load_documents(cfg: ExperimentConfig) -> list[Document]:
-    """Carica i Document del dataset richiesto (incapsula le firme diverse)."""
     root = Path(cfg.datasets_root)
     if cfg.dataset == "daic":
         from src.data.loaders.daic import load_daic
@@ -110,19 +86,12 @@ def _load_documents(cfg: ExperimentConfig) -> list[Document]:
         return load_ecthr(root / "ecthr")
     raise ValueError(f"dataset sconosciuto: {cfg.dataset}")
 
-
-# ============================== costruzione dati+modello ==============================
-
 def _cache_dir(cfg: ExperimentConfig) -> Path:
-    """Ricostruisce la chiave di cache coerente con encoders/cache.py."""
     from src.encoders.cache import cache_dir_for
     return cache_dir_for(cfg.cache_root, cfg.dataset, cfg.encoder, cfg.chunk_size, cfg.overlap)
 
 
 def _build_loaders_and_module(cfg: ExperimentConfig, documents, split_map):
-    """Costruisce (train_loader, val_loader, test_loader, lit_module) in base al
-    tipo di modello. E' il punto dove i due percorsi (cache vs testo) divergono."""
-
     # pesi di classe dai SOLI documenti di training (se balance attivo)
     pos_weight, class_weight = None, None
     if cfg.balance:
@@ -137,7 +106,7 @@ def _build_loaders_and_module(cfg: ExperimentConfig, documents, split_map):
                   f"{'pos_weight' if pos_weight is not None else 'class_weight'} calcolato.")
             
     if cfg.model in ("mil", "gnn"):
-        # --- percorso cache ---
+        # percorso cache
         cache_dir = _cache_dir(cfg)
         make = lambda split: CachedBagDataset(cache_dir, split_map, split)
         loaders = {
@@ -158,7 +127,7 @@ def _build_loaders_and_module(cfg: ExperimentConfig, documents, split_map):
                                edge_mode=cfg.edge_mode, knn_k=cfg.knn_k)
 
     elif cfg.model == "whole_text":
-        # --- percorso testo ---
+        # percorso testo
         make = lambda split: RawTextDataset(documents, split_map, split)
         loaders = {
             s: DataLoader(make(s), batch_size=cfg.batch_size,
@@ -175,14 +144,7 @@ def _build_loaders_and_module(cfg: ExperimentConfig, documents, split_map):
 
     return loaders["train"], loaders["dev"], loaders["test"], lit
 
-
-# ============================== entrypoint ==============================
-
 class PredictionCollector(Callback):
-    """Raccoglie logit, probabilita e label per ogni documento del test set.
-    Serve ad analyze.py per il test di McNemar (predizioni per-documento sullo
-    stesso test set), impossibile dalle sole metriche aggregate."""
-
     def __init__(self, task: str):
         self.task = task
         self.records: list[dict] = []
@@ -201,12 +163,6 @@ class PredictionCollector(Callback):
             })
 
 def train_one(cfg: ExperimentConfig) -> dict:
-    """Esegue un singolo esperimento e ritorna le metriche di test + il config.
-
-    Idempotenza a livello di risultato: si potrebbe skippare se il file di
-    risultato esiste gia (utile per riprendere una matrice interrotta), ma per
-    ora rilancia sempre — lo aggiungeremo nello script run.py.
-    """
     pl.seed_everything(cfg.seed, workers=True)   # riproducibilita completa
 
     documents = _load_documents(cfg)
@@ -239,12 +195,12 @@ def train_one(cfg: ExperimentConfig) -> dict:
         log_every_n_steps=10,
     )
 
-    # --- tempo di training ---
+    # tempo di training
     t_fit_start = time.perf_counter()
     trainer.fit(lit, train_loader, val_loader)
     fit_seconds = time.perf_counter() - t_fit_start
 
-    # --- tempo di inferenza (test sul best checkpoint) ---
+    # tempo di inferenza (test sul best checkpoint)
     t_test_start = time.perf_counter()
     test_results = trainer.test(lit, test_loader, ckpt_path="best", verbose=False)
     test_seconds = time.perf_counter() - t_test_start
@@ -259,7 +215,7 @@ def train_one(cfg: ExperimentConfig) -> dict:
         "test_metrics": metrics,
         "best_checkpoint": str(ckpt.best_model_path),
         "best_score": float(ckpt.best_model_score) if ckpt.best_model_score is not None else None,
-        # --- nuovi campi ---
+        # nuovi campi
         "timing": {
             "fit_seconds": round(fit_seconds, 2),
             "test_seconds": round(test_seconds, 2),

@@ -1,21 +1,3 @@
-"""
-lit_module.py — Il LightningModule che orchestra il training dei tre modelli.
-
-Struttura a gerarchia:
-  BaseLitModule   -> TUTTA la logica condivisa: loss (da heads.py), metriche (da
-                     metrics.py), ottimizzatore, il ciclo di ogni step (forward ->
-                     loss -> metriche -> log), il lifecycle delle metriche a fine
-                     epoca. Non sa come si chiama il forward di un modello: delega.
-  MILLitModule    -> sa solo come passare dal batch-cache al forward del MIL.
-  GNNLitModule    -> come sopra, ma costruisce gli archi prima del forward.
-  WholeTextLit... -> sa solo come passare dal batch-testo al forward del whole-text.
-
-Perche la gerarchia e non un modulo unico con if: la diversita dei tre modelli
-(firme di forward diverse, cache vs testo, per-documento vs per-batch) e confinata
-in un metodo minuscolo per sottoclasse (_forward_batch). Tutto il resto — che deve
-essere IDENTICO per l'equita del confronto — vive una volta sola nella base.
-"""
-
 from __future__ import annotations
 
 import lightning.pytorch as pl
@@ -26,17 +8,7 @@ from src.models.gnn import build_edges
 from src.models.heads import build_loss, to_target
 from src.training.metrics import build_metrics, prepare_for_metrics
 
-
-# ============================== base condivisa ==============================
-
 class BaseLitModule(pl.LightningModule):
-    """Logica di training condivisa da tutti e tre i modelli.
-
-    Le sottoclassi implementano SOLO `_forward_batch(batch) -> logits (B, C)`.
-    Tutto il resto — loss, metriche, ottimizzatore, logging — e definito qui e
-    identico per MIL, GNN e whole-text.
-    """
-
     def __init__(
         self,
         model: torch.nn.Module,
@@ -54,25 +26,22 @@ class BaseLitModule(pl.LightningModule):
         self.lr = lr
         self.weight_decay = weight_decay
 
-        # loss condivisa (da heads.py), scelta in base al task
+        # loss condivisa, scelta in base al task
         self.loss_fn = build_loss(task, pos_weight=pos_weight, class_weight=class_weight)
 
-        # tre collezioni di metriche separate: registrandole come attributi (sono
-        # nn.Module), Lightning le sposta sul device giusto in automatico.
+        # tre collezioni di metriche separate
         self.train_metrics = build_metrics(task, num_classes, prefix="train/")
         self.val_metrics = build_metrics(task, num_classes, prefix="val/")
         self.test_metrics = build_metrics(task, num_classes, prefix="test/")
 
-        # salva gli iperparametri scalari nel checkpoint (ignora il modello, che
-        # non e serializzabile come hparam)
+        # salva gli iperparametri scalari nel checkpoint (ignora il modello, che non è serializzabile)
         self.save_hyperparameters(ignore=["model", "pos_weight", "class_weight"])
 
-    # --- da implementare nelle sottoclassi ---
+    # da implementare nelle sottoclassi
     def _forward_batch(self, batch: dict) -> Tensor:
-        """Dal batch ai logit (B, out_features). Specifico per tipo di modello."""
         raise NotImplementedError
 
-    # --- ciclo condiviso, uguale per train/val/test ---
+    # ciclo condiviso, uguale per train/val/test 
     def _step(self, batch: dict, stage: str, metrics) -> Tensor:
         logits = self._forward_batch(batch)                       # (B, C)
         target = to_target(batch["labels"], self.task, self.num_classes, device=self.device)
@@ -95,7 +64,7 @@ class BaseLitModule(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         self._step(batch, "test", self.test_metrics)
 
-    # --- lifecycle delle metriche: compute + log + reset a fine epoca ---
+    # lifecycle delle metriche: compute + log + reset a fine epoca
     def on_train_epoch_end(self):
         self.log_dict(self.train_metrics.compute()); self.train_metrics.reset()
 
@@ -108,13 +77,7 @@ class BaseLitModule(pl.LightningModule):
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.lr, weight_decay=self.weight_decay)
 
-
-# ============================== sottoclassi ==============================
-
 class MILLitModule(BaseLitModule):
-    """MIL: batch dalla cache. I bag hanno N variabile -> un documento alla volta,
-    poi si concatenano i logit in (B, C)."""
-
     def _forward_batch(self, batch: dict) -> Tensor:
         logits = []
         for emb in batch["embeddings"]:
@@ -125,9 +88,6 @@ class MILLitModule(BaseLitModule):
 
 
 class GNNLitModule(BaseLitModule):
-    """GNN: come MIL, ma costruisce gli archi prima del forward. edge_mode e knn_k
-    sono iperparametri dell'esperimento (l'ablation sulla struttura del grafo)."""
-
     def __init__(self, *args, edge_mode: str = "sequential", knn_k: int = 5, **kwargs):
         super().__init__(*args, **kwargs)
         self.edge_mode = edge_mode
@@ -146,8 +106,5 @@ class GNNLitModule(BaseLitModule):
 
 
 class WholeTextLitModule(BaseLitModule):
-    """Whole-text: batch di stringhe. Il modello tokenizza e processa l'intero
-    batch in un forward (l'encoder e fine-tunato)."""
-
     def _forward_batch(self, batch: dict) -> Tensor:
         return self.model(batch["texts"])   # (B, C); il modello gestisce il device
