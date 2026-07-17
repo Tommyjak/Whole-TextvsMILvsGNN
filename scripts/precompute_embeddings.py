@@ -1,54 +1,25 @@
-"""
-precompute_embeddings.py — Entrypoint: popola la cache degli embedding frozen.
-
-Mette in fila l'intera spina dorsale condivisa:
-    loader -> Document -> chunker -> FrozenEncoder -> cache .pt su disco
-
-Gira UNA volta per (dataset, encoder, granularita). Dopo, MIL e GNN leggono la
-cache invece di ri-encodare: e cio che rende praticabile la matrice di esperimenti.
-
-Esempi d'uso:
-    # smoke test veloce: 5 documenti DAIC con un encoder piccolo, una granularita
-    python scripts/precompute_embeddings.py --dataset daic \\
-        --encoder bert-base-uncased --granularities 128 --limit 5
-
-    # run reale DAIC su tutte le granularita dell'ablation
-    python scripts/precompute_embeddings.py --dataset daic --granularities 64 128 256
-
-    # IMCS con il suo BERT cinese
-    python scripts/precompute_embeddings.py --dataset imcs21 --granularities 64 128 256
-"""
-
 from __future__ import annotations
 
 import argparse
 import sys
 from pathlib import Path
 
-# --- rende importabile il package src/ quando si lancia lo script direttamente ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-import torch  # noqa: E402
+import torch
 
-from src.data.canonical import Document  # noqa: E402
-from src.encoders.backbone import FrozenEncoder  # noqa: E402
-from src.encoders.cache import precompute_embeddings, cache_dir_for, list_cached, load_cached  # noqa: E402
-
-
-# ---------------------- dispatch dei loader per dataset ----------------------
-# Ogni loader ha una firma diversa (root vs csv_path): lo incapsuliamo qui, cosi
-# lo script non deve conoscere le idiosincrasie di ciascuno.
+from src.data.canonical import Document
+from src.encoders.backbone import FrozenEncoder
+from src.encoders.cache import precompute_embeddings, cache_dir_for, list_cached, load_cached
 
 def _load_daic(datasets_root: Path) -> list[Document]:
     from src.data.loaders.daic import load_daic
     return load_daic(datasets_root / "daic-woz")
 
-
 def _load_imcs21(datasets_root: Path) -> list[Document]:
     from src.data.loaders.imcs21 import load_imcs21
     return load_imcs21(datasets_root / "imcs21")
-
 
 def _load_mtsamples(datasets_root: Path) -> list[Document]:
     from src.data.loaders.mtsamples import load_mtsamples
@@ -86,7 +57,6 @@ def parse_args() -> argparse.Namespace:
                    help="Ricalcola anche gli embedding gia presenti in cache.")
     p.add_argument("--device", default=None, help="cuda / cpu (default: auto).")
     return p.parse_args()
-
 
 def main() -> None:
     args = parse_args()
@@ -149,7 +119,6 @@ def main() -> None:
             assert emb.shape[1] == encoder.hidden_size, "hidden_size non coerente!"
 
     print("\nFatto. Cache popolata.")
-
 
 if __name__ == "__main__":
     main()
