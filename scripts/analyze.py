@@ -1,26 +1,3 @@
-"""
-analyze.py — Aggrega i risultati e produce tabelle, test di significativita e
-figure per la relazione.
-
-SEPARAZIONE UFFICIALE vs CROSS-VALIDATION:
-  I run con Monte Carlo CV (config['cv']==True, cartelle '*_cv') e quelli con
-  split ufficiale sono due PROTOCOLLI diversi e non vanno mai mescolati. Per
-  ogni dataset che ha entrambi (daic, imcs21, mtsamples) si producono percio'
-  DUE analisi separate:
-     - "<dataset> [ufficiale]"  -> solo run a split ufficiale, confrontati fra loro
-     - "<dataset> [cv]"         -> solo run in Monte Carlo CV, confrontati fra loro
-  I confronti a coppie e le figure restano SEMPRE dentro lo stesso protocollo.
-  ECtHR ha solo lo split ufficiale -> una sola analisi.
-
-Legge results/**/result.json (con 'predictions' e 'timing') e per ogni blocco
-produce: tabella (CSV), McNemar sulle predizioni per-documento, figure.
-
-Uso:
-    python scripts/analyze.py
-    python scripts/analyze.py --datasets daic ecthr
-    python scripts/analyze.py --metric test/auprc
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -29,23 +6,10 @@ import json
 import statistics
 from collections import defaultdict
 from pathlib import Path
-
-try:
-    from scipy import stats as _stats
-    _HAS_SCIPY = True
-except ImportError:
-    _HAS_SCIPY = False
-
-try:
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-    _HAS_MPL = True
-except ImportError:
-    _HAS_MPL = False
-
-
-# ------------------------------------------------------------- caricamento ----
+from scipy import stats as _stats
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 def load_all_results(results_root: Path) -> list[dict]:
     results = []
@@ -56,22 +20,14 @@ def load_all_results(results_root: Path) -> list[dict]:
             print(f"[analyze] salto {path}: {e}")
     return results
 
-
 def is_cv(cfg: dict) -> bool:
-    """True se il run e' in Monte Carlo cross-validation."""
     return bool(cfg.get("cv", False))
 
-
 def protocol_of(cfg: dict) -> str:
-    """Il protocollo del run: 'cv' o 'ufficiale'. E' la chiave che separa i
-    due mondi: non si confrontano mai fra loro."""
+    
     return "cv" if is_cv(cfg) else "ufficiale"
 
-
 def group_key(cfg: dict) -> str:
-    """Identifica un setup a meno del seed, DENTRO un protocollo.
-    Include '_cv' per i run in cross-validation, cosi non collassano con gli
-    ufficiali nemmeno se dataset/modello/granularita coincidono."""
     base = f"{cfg['dataset']}_{cfg['model']}_g{cfg['chunk_size']}"
     if cfg["model"] == "gnn":
         base += f"_{cfg.get('edge_mode', 'sequential')}"
@@ -79,17 +35,14 @@ def group_key(cfg: dict) -> str:
         base += "_cv"
     return base
 
-
 def build_groups(results: list[dict]) -> dict[str, dict]:
-    """Raggruppa per setup (a meno del seed). Ogni gruppo conserva, per seed,
-    metriche + predizioni + timing, e sa a quale (dataset, protocollo) appartiene."""
     groups: dict[str, dict] = {}
     for r in results:
         cfg = r["config"]
         key = group_key(cfg)
         g = groups.setdefault(key, {
             "dataset": cfg["dataset"],
-            "protocol": protocol_of(cfg),        # 'cv' | 'ufficiale'
+            "protocol": protocol_of(cfg),
             "model": cfg["model"],
             "chunk_size": cfg["chunk_size"],
             "edge_mode": cfg.get("edge_mode") if cfg["model"] == "gnn" else None,
@@ -108,10 +61,8 @@ def build_groups(results: list[dict]) -> dict[str, dict]:
             g["timing_by_seed"][seed] = r["timing"]
     return groups
 
-
 def metric_values(group: dict, metric: str) -> dict[int, float]:
     return {s: mm[metric] for s, mm in group["by_seed"].items() if metric in mm}
-
 
 def all_metrics(group: dict) -> list[str]:
     names = set()
@@ -119,13 +70,11 @@ def all_metrics(group: dict) -> list[str]:
         names.update(mm.keys())
     return sorted(n for n in names if not n.endswith("loss"))
 
-
 def primary_metric(metrics: list[str]) -> str:
     for cand in ("test/f1_macro", "test/f1", "test/auprc", "test/auroc"):
         if cand in metrics:
             return cand
     return metrics[0] if metrics else ""
-
 
 def aggregate(group: dict, metric: str) -> tuple[float, float, int]:
     vals = list(metric_values(group, metric).values())
@@ -135,14 +84,10 @@ def aggregate(group: dict, metric: str) -> tuple[float, float, int]:
     std = statistics.pstdev(vals) if len(vals) > 1 else 0.0
     return mean, std, len(vals)
 
-
 def mean_timing(group: dict, field: str) -> float | None:
     vals = [t[field] for t in group["timing_by_seed"].values()
             if t.get(field) is not None]
     return statistics.mean(vals) if vals else None
-
-
-# --------------------------------------------------------------- tabelle ----
 
 def print_table(title: str, keys: list[str], groups: dict[str, dict], out_dir: Path,
                 csv_name: str) -> None:
@@ -178,16 +123,12 @@ def print_table(title: str, keys: list[str], groups: dict[str, dict], out_dir: P
         w.writeheader(); w.writerows(rows_csv)
     print(f"[analyze] tabella -> {csv_path}")
 
-
-# ---------------------------------------------------- McNemar / significativita ----
-
 def _binarize(probs: list[float], task_multilabel: bool) -> object:
     if task_multilabel:
         return tuple(1 if p >= 0.5 else 0 for p in probs)
     if len(probs) == 1:
         return int(probs[0] >= 0.5)
     return int(max(range(len(probs)), key=lambda i: probs[i]))
-
 
 def _correct_map(preds: dict, task_multilabel: bool) -> dict[str, bool]:
     out = {}
@@ -199,7 +140,6 @@ def _correct_map(preds: dict, task_multilabel: bool) -> dict[str, bool]:
         else:
             out[doc_id] = (pred == label)
     return out
-
 
 def mcnemar_pair(group_a: dict, group_b: dict, task_multilabel: bool) -> dict | None:
     shared_seeds = sorted(set(group_a["preds_by_seed"]) & set(group_b["preds_by_seed"]))
@@ -216,12 +156,10 @@ def mcnemar_pair(group_a: dict, group_b: dict, task_multilabel: bool) -> dict | 
             n += 1
     if b + c == 0:
         return {"b": 0, "c": 0, "n": n, "pvalue": 1.0}
-    if _HAS_SCIPY:
-        pvalue = _stats.binomtest(min(b, c), b + c, 0.5).pvalue
-    else:
-        pvalue = float("nan")
-    return {"b": b, "c": c, "n": n, "pvalue": pvalue}
+    
+    pvalue = _stats.binomtest(min(b, c), b + c, 0.5).pvalue
 
+    return {"b": b, "c": c, "n": n, "pvalue": pvalue}
 
 def significance(title: str, keys: list[str], groups: dict[str, dict], metric: str) -> None:
     if len(keys) < 2:
@@ -245,18 +183,15 @@ def significance(title: str, keys: list[str], groups: dict[str, dict], metric: s
             else:
                 va, vb = metric_values(groups[a], metric), metric_values(groups[b], metric)
                 shared = sorted(set(va) & set(vb))
-                if len(shared) >= 2 and _HAS_SCIPY:
+                if len(shared) >= 2:
                     p = _stats.ttest_rel([va[s] for s in shared], [vb[s] for s in shared]).pvalue
                     print(f"  {la} vs {lb}: Δ={diff:+.3f} | t-test seed p={p:.3f} (n={len(shared)})")
                 else:
                     print(f"  {la} vs {lb}: Δ={diff:+.3f} | test non calcolabile")
 
-
-# --------------------------------------------------------------- figure ----
-
 def plot_bars(title: str, keys: list[str], groups: dict[str, dict], metric: str,
               out_dir: Path, fig_name: str) -> None:
-    if not _HAS_MPL or not keys:
+    if not keys:
         return
     means, stds, labels = [], [], []
     for k in keys:
@@ -277,10 +212,9 @@ def plot_bars(title: str, keys: list[str], groups: dict[str, dict], metric: str,
     fig.savefig(path, dpi=150); plt.close(fig)
     print(f"[analyze] figura -> {path}")
 
-
 def plot_acc_vs_cost(title: str, keys: list[str], groups: dict[str, dict], metric: str,
                      out_dir: Path, fig_name: str) -> None:
-    if not _HAS_MPL or not keys:
+    if not keys:
         return
     xs, ys, labels = [], [], []
     for k in keys:
@@ -305,11 +239,7 @@ def plot_acc_vs_cost(title: str, keys: list[str], groups: dict[str, dict], metri
 
 def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: str,
                  out_dir: Path, fig_name: str) -> None:
-    """Boxplot della metrica primaria: una scatola per modello, costruita sui
-    valori dei singoli seed/fold. Mostra la DISTRIBUZIONE (mediana, quartili,
-    dispersione, outlier), non solo media±std -> piu' onesto sui dati rumorosi
-    e piu' informativo sui blocchi CV (10 fold)."""
-    if not _HAS_MPL or not keys:
+    if not keys:
         return
 
     data, labels, ns = [], [], []
@@ -327,20 +257,18 @@ def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: s
 
     bp = ax.boxplot(
         data,
-        tick_labels=labels,          # per matplotlib<3.9 usare labels=labels
-        showmeans=True,              # mostra anche la MEDIA (triangolo) oltre alla mediana
+        tick_labels=labels,
+        showmeans=True,
         meanprops=dict(marker="^", markerfacecolor="white",
                        markeredgecolor="black", markersize=7),
-        medianprops=dict(color="#C44E52", linewidth=2),   # mediana in risalto
+        medianprops=dict(color="#C44E52", linewidth=2),
         boxprops=dict(facecolor="#4C72B0", alpha=0.6, edgecolor="black"),
         whiskerprops=dict(color="black"),
         capprops=dict(color="black"),
         flierprops=dict(marker="o", markersize=5, markerfacecolor="gray", alpha=0.6),
-        patch_artist=True,           # necessario per colorare i box
+        patch_artist=True,
     )
 
-    # sovrappongo i singoli punti (seed/fold), leggermente sparpagliati in x,
-    # cosi si vede QUANTI sono e dove cadono davvero
     import numpy as np
     for i, vals in enumerate(data, start=1):
         jitter = np.random.default_rng(0).normal(0, 0.04, size=len(vals))
@@ -363,8 +291,6 @@ def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: s
     plt.close(fig)
     print(f"[analyze] figura -> {path}")
 
-# ----------------------------------------------------------------- main ----
-
 def analyze_block(dataset: str, protocol: str, groups: dict[str, dict],
                   metric_override: str | None, out_dir: Path) -> None:
     """Una analisi completa per un blocco (dataset, protocollo)."""
@@ -384,7 +310,6 @@ def analyze_block(dataset: str, protocol: str, groups: dict[str, dict],
     plot_boxplot(title, keys, groups, metric, out_dir, fig_name=f"fig_{suffix}_box.png")
     plot_acc_vs_cost(title, keys, groups, metric, out_dir, fig_name=f"fig_{suffix}_cost.png")
 
-
 def parse_args():
     p = argparse.ArgumentParser(description="Aggrega risultati, test e figure.")
     p.add_argument("--results-root", default="results")
@@ -393,7 +318,6 @@ def parse_args():
     p.add_argument("--metric", default=None)
     return p.parse_args()
 
-
 def main():
     args = parse_args()
     results = load_all_results(Path(args.results_root))
@@ -401,10 +325,6 @@ def main():
         print(f"Nessun result.json in {args.results_root}. Hai lanciato run.py?")
         return
     print(f"[analyze] {len(results)} run caricati.")
-    if not _HAS_SCIPY:
-        print("[analyze] scipy assente: test saltati (pip install scipy).")
-    if not _HAS_MPL:
-        print("[analyze] matplotlib assente: figure saltate (pip install matplotlib).")
 
     groups = build_groups(results)
     out_dir = Path(args.out_dir)
