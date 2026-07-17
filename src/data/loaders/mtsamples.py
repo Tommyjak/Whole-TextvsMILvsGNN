@@ -1,29 +1,3 @@
-"""
-loaders/mtsamples.py — Loader per MTSamples (referti clinici, inglese).
-
-Verificato sul CSV reale (4999 righe, 40 classi). Converte i referti in Document
-canonici. Task: classificazione della SPECIALITA medica -> multi-classe.
-
-Pulizia applicata (decisa sui dati, vedi DESIGN.md):
-  1. drop transcription nulle/vuote           (33 righe)
-  2. dedup su transcription, keep='first'      (~2609 duplicati -> evita leakage
-                                                train/test dello stesso referto)
-  3. rimozione "non-specialita" (tipi di documento, non discipline cliniche)
-  4. soglia minima >=40 campioni per classe    (scarta classi troppo rare)
-  5. cap a 300 campioni per classe             (frena "Surgery" che domina)
-  -> risultato: ~1132 documenti, 9 classi, classe maggiore ~26% (bilanciato).
-
-Tutti i parametri (soglia, cap, elenco non-specialita) sono argomenti, cosi la
-politica e ispezionabile e modificabile senza toccare il codice.
-
-Split: MTSamples NON ha uno split ufficiale. Il loader NON splitta: assegna a
-tutti meta['split']='all'. Lo split stratificato train/dev/test avverra a valle,
-in modo deterministico per seed, coerente con gli altri dataset.
-
-Label: specialita -> indice intero via vocabolario ordinato alfabeticamente e
-persistito su disco (riproducibile tra run).
-"""
-
 from __future__ import annotations
 
 import json
@@ -45,8 +19,6 @@ DEFAULT_NON_SPECIALTY: set[str] = {
 
 
 def _build_specialty_vocab(specialties: list[str], path: Path) -> dict[str, int]:
-    """Costruisce (o ricarica) la mappa specialita->indice, ordinata alfabeticamente
-    e persistita, cosi l'indice e stabile tra run."""
     if path.exists():
         return json.loads(path.read_text(encoding="utf-8"))
     mapping = {name: i for i, name in enumerate(sorted(set(specialties)))}
@@ -63,10 +35,7 @@ def load_mtsamples(
     seed: int = 42,
     vocab_path: str | Path | None = None,
 ) -> list[Document]:
-    """Carica MTSamples come lista di Document, con la pulizia descritta sopra.
-
-    csv_path: percorso a mtsamples.csv.
-    """
+    
     csv_path = Path(csv_path)
     non_specialty = DEFAULT_NON_SPECIALTY if non_specialty is None else non_specialty
     vocab_path = Path(vocab_path) if vocab_path else csv_path.parent / "specialty_vocab.json"
