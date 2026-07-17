@@ -1,19 +1,4 @@
-"""
-mil.py — Multiple Instance Learning con gated attention pooling (Ilse et al. 2018).
 
-Legge un bag di embedding gia calcolati dalla cache (matrice (N_chunk, hidden)) e:
-  1. assegna un peso di attenzione a ciascun chunk, INDIPENDENTEMENTE dagli altri
-  2. produce il vettore-documento come media pesata dei chunk (embedding-based MIL)
-  3. classifica il vettore-documento con la testa condivisa di heads.py
-
-Cosa NON fa (ed e il punto del confronto con la GNN): i chunk NON si scambiano
-informazione tra loro. Ogni peso dipende solo dal proprio chunk -> il bag e un
-INSIEME NON ORDINATO. La GNN, a differenza, fara message passing tra chunk PRIMA
-di aggregare. Stessa cache, stessa testa: l'unica differenza sara l'aggregazione.
-
-I pesi di attenzione sono restituiti insieme ai logit: sono la chiave
-interpretativa (quali chunk hanno pesato di piu nella predizione).
-"""
 
 from __future__ import annotations
 
@@ -24,14 +9,6 @@ from src.models.heads import ClassificationHead
 
 
 class GatedAttentionPooling(nn.Module):
-    """Gated attention pooling di Ilse et al. (2018).
-
-    Per ogni istanza h_k calcola uno score da due rami — tanh(V h) e sigmoid(U h)
-    — moltiplicati elemento per elemento (il "gate"): il ramo sigmoid modula
-    quanto del ramo tanh far passare, dando un'attenzione piu espressiva del
-    semplice tanh. I pesi finali sommano a 1 (softmax sulle istanze).
-    """
-
     def __init__(self, in_dim: int, attn_dim: int = 128) -> None:
         super().__init__()
         self.V = nn.Linear(in_dim, attn_dim)  # ramo "contenuto"
@@ -46,16 +23,7 @@ class GatedAttentionPooling(nn.Module):
         pooled = (weights * bag).sum(dim=0)                           # (in_dim,)
         return pooled, weights
 
-
 class MILModel(nn.Module):
-    """Modello MIL completo: pooling + testa condivisa.
-
-    forward processa UN bag alla volta (N chunk di un singolo documento). I bag
-    hanno dimensione variabile tra documenti, quindi il loop di training lavora a
-    batch_size=1 sul bag (eventuale batching con padding+maschera come ottimizzazione
-    futura). Ritorna (logits, attention_weights).
-    """
-
     def __init__(
         self,
         in_dim: int,

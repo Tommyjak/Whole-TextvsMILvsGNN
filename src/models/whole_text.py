@@ -1,18 +1,3 @@
-"""
-whole_text.py — Modello whole-text: NESSUNA frammentazione.
-
-Il modello a se. NON legge la cache, NON usa il chunker: prende il testo INTERO
-del Document, lo tronca a max_length, e lo processa in un unico forward. E' l'unico
-dei tre che fa FINE-TUNING dell'encoder (il [CLS] e un buon vettore-documento solo
-se addestrato) -> confounder dichiarato: encoder allenabile vs frozen di MIL/GNN.
-
-max_length e' l'iperparametro centrale dell'esperimento:
-  - 512  con BERT standard  -> esperimento principale (stesso backbone dei chunk)
-  - 4096 con Longformer     -> cella di controllo a contesto lungo (su ECtHR)
-Il troncamento (truncation=True) e' VOLUTO: e' il "costo del troncamento" che lo
-studio misura, l'opposto di cio che il chunker fa in MIL/GNN.
-"""
-
 from __future__ import annotations
 
 import torch
@@ -23,12 +8,6 @@ from src.models.heads import ClassificationHead
 
 
 class WholeTextModel(nn.Module):
-    """Encoder (fine-tunato) sul testo intero -> [CLS] -> testa condivisa.
-
-    forward prende una lista di stringhe (i documenti interi) e ritorna i logit.
-    A differenza di MIL/GNN, l'encoder e' PARTE del modello e riceve gradiente.
-    """
-
     def __init__(
         self,
         model_name: str,

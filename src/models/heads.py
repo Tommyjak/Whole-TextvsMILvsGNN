@@ -1,21 +1,3 @@
-"""
-heads.py — Testa di classificazione e loss CONDIVISE dai tre modelli.
-
-Questo file e il perno dell'equita sperimentale: MIL, GNN e whole-text producono
-ciascuno un vettore-documento con la propria aggregazione, ma da li in poi usano
-la STESSA testa e la STESSA loss definite qui. Cosi l'unica cosa che distingue i
-tre modelli e come si arriva al vettore-documento, non come lo si classifica.
-
-Tre tipi di task, un'unica astrazione:
-  - "binary"      (DAIC)                 -> 1 logit,  BCEWithLogitsLoss
-  - "multiclass"  (IMCS 10, MTSamples 9) -> C logit,  CrossEntropyLoss
-  - "multilabel"  (ECtHR)                -> C logit,  BCEWithLogitsLoss (per-classe)
-
-Il sigmoid/softmax NON e nel forward: si lavora sui LOGIT (piu stabile
-numericamente), e la loss giusta li interpreta. logits_to_probs() fa la
-conversione quando servono le probabilita (metriche, inferenza).
-"""
-
 from __future__ import annotations
 
 import torch
@@ -24,9 +6,7 @@ from src.data.canonical import Document
 
 VALID_TASKS = ("binary", "multiclass", "multilabel")
 
-
 def out_features_for(task: str, num_classes: int | None) -> int:
-    """Quanti logit produce la testa per ciascun tipo di task."""
     if task == "binary":
         return 1
     if task in ("multiclass", "multilabel"):
@@ -35,15 +15,7 @@ def out_features_for(task: str, num_classes: int | None) -> int:
         return num_classes
     raise ValueError(f"task deve essere uno di {VALID_TASKS}, ricevuto {task!r}.")
 
-
 class ClassificationHead(nn.Module):
-    """MLP condiviso: (B, in_dim) -> (B, out_features).
-
-    Struttura identica per tutti e tre i modelli: Linear -> ReLU -> Dropout ->
-    Linear. Deliberatamente semplice: il lavoro rappresentativo lo fa l'encoder
-    frozen a monte; questa testa deve solo mappare il vettore-documento sui logit.
-    """
-
     def __init__(
         self,
         in_dim: int,
@@ -65,24 +37,17 @@ class ClassificationHead(nn.Module):
     def forward(self, x: Tensor) -> Tensor:
         return self.net(x)
 
-
 def build_loss(
     task: str,
     pos_weight: Tensor | None = None,
     class_weight: Tensor | None = None,
 ) -> nn.Module:
-    """Restituisce la loss giusta per il task.
-
-    - binary/multilabel -> BCEWithLogitsLoss; pos_weight bilancia le classi
-      (scalare per il binario, shape (C,) per il multilabel).
-    - multiclass -> CrossEntropyLoss; class_weight ha shape (C,).
-    """
+    
     if task in ("binary", "multilabel"):
         return nn.BCEWithLogitsLoss(pos_weight=pos_weight)
     if task == "multiclass":
         return nn.CrossEntropyLoss(weight=class_weight)
     raise ValueError(f"task deve essere uno di {VALID_TASKS}, ricevuto {task!r}.")
-
 
 def to_target(
     labels: list,
@@ -90,12 +55,7 @@ def to_target(
     num_classes: int | None = None,
     device: torch.device | str | None = None,
 ) -> Tensor:
-    """Converte le label dei Document nel formato-target che la loss si aspetta.
-
-    - binary     : list[int 0/1]        -> (B, 1) float
-    - multiclass : list[int]            -> (B,)   long  (indice di classe)
-    - multilabel : list[list[int]]      -> (B, C) float multi-hot
-    """
+    
     if task == "binary":
         return torch.tensor(labels, dtype=torch.float32, device=device).unsqueeze(1)
     if task == "multiclass":
@@ -110,9 +70,7 @@ def to_target(
         return target
     raise ValueError(f"task deve essere uno di {VALID_TASKS}, ricevuto {task!r}.")
 
-
 def logits_to_probs(logits: Tensor, task: str) -> Tensor:
-    """Converte i logit in probabilita, secondo il task (per metriche/inferenza)."""
     if task in ("binary", "multilabel"):
         return torch.sigmoid(logits)
     return torch.softmax(logits, dim=-1)
@@ -122,16 +80,7 @@ def compute_class_weights(
     task: str,
     num_classes: int | None = None,
 ) -> Tensor | None:
-    """Calcola i pesi di classe dalla distribuzione delle SOLE label di training.
 
-    Mai da dev/test: userebbe informazione fuori dal training set (leakage).
-
-    Ritorna il tensore adatto alla loss del task:
-      - binary     -> pos_weight scalare = n_neg / n_pos  (per BCEWithLogitsLoss)
-      - multiclass -> class_weight (C,)  = n_tot / (C * n_c)  (per CrossEntropyLoss)
-      - multilabel -> pos_weight (C,)    = n_neg_c / n_pos_c per ciascuna classe
-    Ritorna None se il calcolo non e applicabile (es. una classe assente).
-    """
     labels = [d.label for d in train_docs]
 
     if task == "binary":
