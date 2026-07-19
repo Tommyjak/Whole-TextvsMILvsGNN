@@ -1,3 +1,4 @@
+# Side by Side: MIL vs GNN vs Whole-Text for Long Medical Text
 ## Cos'è questo progetto
 
 **"Side by Side: MIL vs GNN vs Whole-Text for Long Medical Text"** — progetto per il corso
