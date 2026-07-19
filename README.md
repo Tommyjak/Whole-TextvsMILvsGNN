@@ -1,8 +1,3 @@
-# CLAUDE.md
-
-Guida al progetto per Claude Code. Sintesi derivata da `README.md`, dal codice in `src/`,
-`scripts/`, dagli script `run_*.sh` e dalle spiegazioni file-per-file in `spiegazione_file.txt`.
-
 ## Cos'è questo progetto
 
 **"Side by Side: MIL vs GNN vs Whole-Text for Long Medical Text"** — progetto per il corso
