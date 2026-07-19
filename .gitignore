@@ -30,12 +30,3 @@ __pycache__/
 .env
 *.key
 
-# Claude Code (impostazioni locali)
-.claude/settings.local.json
-
-# OS / editor
-.DS_Store
-*.swp
-
-# Roba mia
-spiegazione_file.txt
