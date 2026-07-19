@@ -44,6 +44,7 @@ def build_groups(results: list[dict]) -> dict[str, dict]:
             "dataset": cfg["dataset"],
             "protocol": protocol_of(cfg),
             "model": cfg["model"],
+            "task": cfg["task"],
             "chunk_size": cfg["chunk_size"],
             "edge_mode": cfg.get("edge_mode") if cfg["model"] == "gnn" else None,
             "by_seed": defaultdict(dict),
@@ -164,9 +165,7 @@ def mcnemar_pair(group_a: dict, group_b: dict, task_multilabel: bool) -> dict | 
 def significance(title: str, keys: list[str], groups: dict[str, dict], metric: str) -> None:
     if len(keys) < 2:
         return
-    task_ml = any("f1_micro" in all_metrics(groups[k]) and groups[k]["model"] != "gnn"
-                  for k in keys) or any(
-                  "f1_micro" in all_metrics(groups[k]) for k in keys)
+    task_ml = any(groups[k]["task"] == "multilabel" for k in keys)
     print(f"\n{title} — confronto a coppie (stesso protocollo)")
     for i in range(len(keys)):
         for j in range(i + 1, len(keys)):
