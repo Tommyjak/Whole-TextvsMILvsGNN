@@ -4,7 +4,10 @@ datasets/
 cache/
 
 # Output degli esperimenti (84M+, rigenerabili)
-results/
+results/daic*
+results/imcs21*
+results/mtsamples*
+results/ecthr*
 
 # Ambiente virtuale (5.4G)
 venv_pipeline/
