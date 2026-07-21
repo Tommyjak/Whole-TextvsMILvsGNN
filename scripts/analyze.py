@@ -236,7 +236,7 @@ def plot_acc_vs_cost(title: str, keys: list[str], groups: dict[str, dict], metri
     fig.savefig(path, dpi=150); plt.close(fig)
     print(f"[analyze] figura -> {path}")
 
-def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: str,
+""" def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: str,
                  out_dir: Path, fig_name: str) -> None:
     if not keys:
         return
@@ -278,6 +278,71 @@ def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: s
                        rotation=25, ha="right", fontsize=9)
     ax.set_ylabel(metric.replace("test/", ""))
     ax.set_ylim(0, 1)
+    ax.set_title(f"{title} — {metric.replace('test/','')} (distribuzione sui fold)")
+    ax.grid(axis="y", alpha=0.3)
+    ax.legend([bp["medians"][0], bp["means"][0]], ["mediana", "media"],
+              loc="lower right", fontsize=8)
+    fig.tight_layout()
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    path = out_dir / fig_name
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    print(f"[analyze] figura -> {path}") """
+
+def plot_boxplot(title: str, keys: list[str], groups: dict[str, dict], metric: str,
+                 out_dir: Path, fig_name: str) -> None:
+    if not keys:
+        return
+
+    data, labels, ns = [], [], []
+    for k in keys:
+        vals = list(metric_values(groups[k], metric).values())
+        if not vals:
+            continue
+        data.append(vals)
+        labels.append(k.replace(f"{groups[k]['dataset']}_", ""))
+        ns.append(len(vals))
+    if not data:
+        return
+
+    fig, ax = plt.subplots(figsize=(max(6, len(labels) * 1.5), 5))
+
+    bp = ax.boxplot(
+        data,
+        tick_labels=labels,
+        showmeans=True,
+        meanprops=dict(marker="^", markerfacecolor="white",
+                       markeredgecolor="black", markersize=7),
+        medianprops=dict(color="#C44E52", linewidth=2),
+        boxprops=dict(facecolor="#4C72B0", alpha=0.6, edgecolor="black"),
+        whiskerprops=dict(color="black"),
+        capprops=dict(color="black"),
+        flierprops=dict(marker="o", markersize=5, markerfacecolor="gray", alpha=0.6),
+        patch_artist=True,
+    )
+
+    import numpy as np
+    for i, vals in enumerate(data, start=1):
+        jitter = np.random.default_rng(0).normal(0, 0.04, size=len(vals))
+        ax.scatter(np.full(len(vals), i) + jitter, vals,
+                   s=18, color="black", alpha=0.5, zorder=3)
+
+    ax.set_xticklabels([f"{l}\n(n={n})" for l, n in zip(labels, ns)],
+                       rotation=25, ha="right", fontsize=9)
+    ax.set_ylabel(metric.replace("test/", ""))
+
+    # Limiti y dinamici basati sui dati, con margine
+    all_vals = np.concatenate([np.asarray(v, dtype=float) for v in data])
+    vmin, vmax = float(all_vals.min()), float(all_vals.max())
+    span = vmax - vmin
+    pad = span * 0.1 if span > 0 else 0.05  # margine 10%, fallback se tutti uguali
+    lo = max(0.0, vmin - pad)
+    hi = min(1.0, vmax + pad)
+    if lo == hi:  # salvaguardia contro intervallo nullo
+        lo, hi = max(0.0, lo - 0.05), min(1.0, hi + 0.05)
+    ax.set_ylim(lo, hi)
+
     ax.set_title(f"{title} — {metric.replace('test/','')} (distribuzione sui fold)")
     ax.grid(axis="y", alpha=0.3)
     ax.legend([bp["medians"][0], bp["means"][0]], ["mediana", "media"],
