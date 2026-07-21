@@ -1,0 +1,367 @@
+[analyze] 430 run caricati.
+
+==========================================================================
+DAIC [ufficiale]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc          f1         mcc  infer.ms
+daic_gnn_g128_both               0.600±0.049 0.505±0.105 0.633±0.106 0.457±0.308 0.343±0.200 0.137±0.105      4.21  (n=5)
+daic_gnn_g128_knn                0.552±0.022 0.547±0.063 0.678±0.042 0.700±0.070 0.487±0.028 0.175±0.044      4.21  (n=5)
+daic_gnn_g128_sequential         0.543±0.139 0.533±0.142 0.672±0.131 0.671±0.291 0.453±0.150 0.124±0.213      2.39  (n=5)
+daic_gnn_g64_both                0.561±0.073 0.515±0.115 0.657±0.115 0.657±0.368 0.411±0.216 0.163±0.191      4.78  (n=5)
+daic_gnn_g64_knn                 0.565±0.140 0.516±0.131 0.650±0.118 0.643±0.356 0.438±0.157 0.150±0.227      4.69  (n=5)
+daic_gnn_g64_sequential          0.500±0.129 0.533±0.095 0.669±0.078 0.871±0.114 0.521±0.051 0.188±0.178      2.39  (n=5)
+daic_mil_g128                    0.543±0.031 0.442±0.135 0.559±0.116 0.471±0.233 0.360±0.153 0.034±0.158      1.05  (n=5)
+daic_mil_g64                     0.570±0.068 0.352±0.054 0.529±0.112 0.471±0.229 0.372±0.141 0.075±0.119      1.14  (n=5)
+daic_whole_text_g64              0.591±0.052 0.433±0.046 0.592±0.049 0.429±0.101 0.386±0.053 0.089±0.072     37.72  (n=5)
+[analyze] tabella -> results/analysis/table_daic_ufficiale.csv
+
+DAIC [ufficiale] — confronto a coppie (stesso protocollo)
+  gnn_g128_both vs gnn_g128_knn: Δf1=-0.143 | McNemar b=52 c=23 p=0.0011 (n=230)
+  gnn_g128_both vs gnn_g128_sequential: Δf1=-0.110 | McNemar b=45 c=32 p=0.1711 (n=230)
+  gnn_g128_both vs gnn_g64_both: Δf1=-0.068 | McNemar b=53 c=28 p=0.0073 (n=230)
+  gnn_g128_both vs gnn_g64_knn: Δf1=-0.095 | McNemar b=32 c=22 p=0.2203 (n=230)
+  gnn_g128_both vs gnn_g64_sequential: Δf1=-0.178 | McNemar b=59 c=32 p=0.0061 (n=230)
+  gnn_g128_both vs mil_g128: Δf1=-0.016 | McNemar b=37 c=24 p=0.1237 (n=230)
+  gnn_g128_both vs mil_g64: Δf1=-0.029 | McNemar b=41 c=31 p=0.2888 (n=230)
+  gnn_g128_both vs whole_text_g64: Δf1=-0.043 | McNemar b=36 c=36 p=1.0000 (n=230)
+  gnn_g128_knn vs gnn_g128_sequential: Δf1=+0.033 | McNemar b=10 c=26 p=0.0113 (n=230)
+  gnn_g128_knn vs gnn_g64_both: Δf1=+0.075 | McNemar b=30 c=34 p=0.7080 (n=230)
+  gnn_g128_knn vs gnn_g64_knn: Δf1=+0.048 | McNemar b=19 c=38 p=0.0163 (n=230)
+  gnn_g128_knn vs gnn_g64_sequential: Δf1=-0.035 | McNemar b=10 c=12 p=0.8318 (n=230)
+  gnn_g128_knn vs mil_g128: Δf1=+0.127 | McNemar b=24 c=40 p=0.0599 (n=230)
+  gnn_g128_knn vs mil_g64: Δf1=+0.114 | McNemar b=26 c=45 p=0.0319 (n=230)
+  gnn_g128_knn vs whole_text_g64: Δf1=+0.101 | McNemar b=38 c=67 p=0.0060 (n=230)
+  gnn_g128_sequential vs gnn_g64_both: Δf1=+0.042 | McNemar b=42 c=30 p=0.1945 (n=230)
+  gnn_g128_sequential vs gnn_g64_knn: Δf1=+0.015 | McNemar b=25 c=28 p=0.7838 (n=230)
+  gnn_g128_sequential vs gnn_g64_sequential: Δf1=-0.068 | McNemar b=31 c=17 p=0.0595 (n=230)
+  gnn_g128_sequential vs mil_g128: Δf1=+0.094 | McNemar b=35 c=35 p=1.0000 (n=230)
+  gnn_g128_sequential vs mil_g64: Δf1=+0.081 | McNemar b=31 c=34 p=0.8043 (n=230)
+  gnn_g128_sequential vs whole_text_g64: Δf1=+0.067 | McNemar b=43 c=56 p=0.2276 (n=230)
+  gnn_g64_both vs gnn_g64_knn: Δf1=-0.027 | McNemar b=19 c=34 p=0.0534 (n=230)
+  gnn_g64_both vs gnn_g64_sequential: Δf1=-0.110 | McNemar b=34 c=32 p=0.9022 (n=230)
+  gnn_g64_both vs mil_g128: Δf1=+0.052 | McNemar b=34 c=46 p=0.2185 (n=230)
+  gnn_g64_both vs mil_g64: Δf1=+0.039 | McNemar b=24 c=39 p=0.0769 (n=230)
+  gnn_g64_both vs whole_text_g64: Δf1=+0.025 | McNemar b=31 c=56 p=0.0097 (n=230)
+  gnn_g64_knn vs gnn_g64_sequential: Δf1=-0.083 | McNemar b=41 c=24 p=0.0464 (n=230)
+  gnn_g64_knn vs mil_g128: Δf1=+0.079 | McNemar b=39 c=36 p=0.8176 (n=230)
+  gnn_g64_knn vs mil_g64: Δf1=+0.066 | McNemar b=28 c=28 p=1.0000 (n=230)
+  gnn_g64_knn vs whole_text_g64: Δf1=+0.052 | McNemar b=34 c=44 p=0.3082 (n=230)
+  gnn_g64_sequential vs mil_g128: Δf1=+0.162 | McNemar b=32 c=46 p=0.1405 (n=230)
+  gnn_g64_sequential vs mil_g64: Δf1=+0.149 | McNemar b=31 c=48 p=0.0712 (n=230)
+  gnn_g64_sequential vs whole_text_g64: Δf1=+0.135 | McNemar b=43 c=70 p=0.0141 (n=230)
+  mil_g128 vs mil_g64: Δf1=-0.013 | McNemar b=26 c=29 p=0.7877 (n=230)
+  mil_g128 vs whole_text_g64: Δf1=-0.026 | McNemar b=32 c=45 p=0.1711 (n=230)
+  mil_g64 vs whole_text_g64: Δf1=-0.014 | McNemar b=33 c=43 p=0.3019 (n=230)
+[analyze] figura -> results/analysis/fig_daic_ufficiale_bars.png
+[analyze] figura -> results/analysis/fig_daic_ufficiale_box.png
+[analyze] figura -> results/analysis/fig_daic_ufficiale_cost.png
+
+==========================================================================
+DAIC [cv]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc          f1         mcc  infer.ms
+daic_gnn_g128_both_cv            0.683±0.067 0.582±0.117 0.642±0.115 0.356±0.204 0.370±0.201 0.236±0.129      4.56  (n=10)
+daic_gnn_g128_knn_cv             0.638±0.141 0.534±0.151 0.604±0.155 0.367±0.334 0.318±0.218 0.159±0.205      4.56  (n=10)
+daic_gnn_g128_sequential_cv      0.566±0.152 0.554±0.133 0.648±0.136 0.533±0.347 0.373±0.193 0.133±0.186      3.73  (n=10)
+daic_gnn_g64_both_cv             0.603±0.117 0.556±0.161 0.661±0.119 0.522±0.365 0.384±0.215 0.167±0.223      5.03  (n=10)
+daic_gnn_g64_knn_cv              0.659±0.085 0.606±0.141 0.698±0.100 0.556±0.172 0.501±0.067 0.274±0.134      5.03  (n=10)
+daic_gnn_g64_sequential_cv       0.634±0.122 0.539±0.148 0.663±0.155 0.511±0.187 0.464±0.168 0.196±0.254      3.89  (n=10)
+daic_mil_g128_cv                 0.572±0.099 0.527±0.152 0.602±0.148 0.433±0.246 0.352±0.154 0.085±0.153      1.92  (n=10)
+daic_mil_g64_cv                  0.628±0.099 0.535±0.161 0.639±0.178 0.556±0.233 0.467±0.161 0.205±0.226      2.17  (n=10)
+daic_whole_text_g64_cv           0.617±0.103 0.456±0.124 0.570±0.135 0.333±0.157 0.340±0.148 0.093±0.209     53.51  (n=10)
+[analyze] tabella -> results/analysis/table_daic_cv.csv
+
+DAIC [cv] — confronto a coppie (stesso protocollo)
+  gnn_g128_both_cv vs gnn_g128_knn_cv: Δf1=+0.052 | McNemar b=48 c=36 p=0.2299 (n=290)
+  gnn_g128_both_cv vs gnn_g128_sequential_cv: Δf1=-0.003 | McNemar b=64 c=55 p=0.4635 (n=290)
+  gnn_g128_both_cv vs gnn_g64_both_cv: Δf1=-0.014 | McNemar b=63 c=61 p=0.9285 (n=290)
+  gnn_g128_both_cv vs gnn_g64_knn_cv: Δf1=-0.130 | McNemar b=44 c=68 p=0.0293 (n=290)
+  gnn_g128_both_cv vs gnn_g64_sequential_cv: Δf1=-0.093 | McNemar b=58 c=63 p=0.7163 (n=290)
+  gnn_g128_both_cv vs mil_g128_cv: Δf1=+0.018 | McNemar b=61 c=40 p=0.0460 (n=290)
+  gnn_g128_both_cv vs mil_g64_cv: Δf1=-0.097 | McNemar b=51 c=62 p=0.3469 (n=290)
+  gnn_g128_both_cv vs whole_text_g64_cv: Δf1=+0.030 | McNemar b=66 c=68 p=0.9312 (n=290)
+  gnn_g128_knn_cv vs gnn_g128_sequential_cv: Δf1=-0.055 | McNemar b=45 c=48 p=0.8358 (n=290)
+  gnn_g128_knn_cv vs gnn_g64_both_cv: Δf1=-0.066 | McNemar b=25 c=35 p=0.2451 (n=290)
+  gnn_g128_knn_cv vs gnn_g64_knn_cv: Δf1=-0.183 | McNemar b=33 c=69 p=0.0005 (n=290)
+  gnn_g128_knn_cv vs gnn_g64_sequential_cv: Δf1=-0.146 | McNemar b=49 c=66 p=0.1354 (n=290)
+  gnn_g128_knn_cv vs mil_g128_cv: Δf1=-0.035 | McNemar b=54 c=45 p=0.4215 (n=290)
+  gnn_g128_knn_cv vs mil_g64_cv: Δf1=-0.150 | McNemar b=44 c=67 p=0.0363 (n=290)
+  gnn_g128_knn_cv vs whole_text_g64_cv: Δf1=-0.023 | McNemar b=45 c=59 p=0.2022 (n=290)
+  gnn_g128_sequential_cv vs gnn_g64_both_cv: Δf1=-0.011 | McNemar b=44 c=51 p=0.5384 (n=290)
+  gnn_g128_sequential_cv vs gnn_g64_knn_cv: Δf1=-0.128 | McNemar b=51 c=84 p=0.0057 (n=290)
+  gnn_g128_sequential_cv vs gnn_g64_sequential_cv: Δf1=-0.091 | McNemar b=36 c=50 p=0.1606 (n=290)
+  gnn_g128_sequential_cv vs mil_g128_cv: Δf1=+0.020 | McNemar b=68 c=56 p=0.3232 (n=290)
+  gnn_g128_sequential_cv vs mil_g64_cv: Δf1=-0.094 | McNemar b=51 c=71 p=0.0850 (n=290)
+  gnn_g128_sequential_cv vs whole_text_g64_cv: Δf1=+0.032 | McNemar b=48 c=59 p=0.3337 (n=290)
+  gnn_g64_both_cv vs gnn_g64_knn_cv: Δf1=-0.117 | McNemar b=30 c=56 p=0.0067 (n=290)
+  gnn_g64_both_cv vs gnn_g64_sequential_cv: Δf1=-0.080 | McNemar b=58 c=65 p=0.5887 (n=290)
+  gnn_g64_both_cv vs mil_g128_cv: Δf1=+0.031 | McNemar b=68 c=49 p=0.0957 (n=290)
+  gnn_g64_both_cv vs mil_g64_cv: Δf1=-0.084 | McNemar b=46 c=59 p=0.2414 (n=290)
+  gnn_g64_both_cv vs whole_text_g64_cv: Δf1=+0.043 | McNemar b=51 c=55 p=0.7709 (n=290)
+  gnn_g64_knn_cv vs gnn_g64_sequential_cv: Δf1=+0.037 | McNemar b=60 c=41 p=0.0728 (n=290)
+  gnn_g64_knn_cv vs mil_g128_cv: Δf1=+0.148 | McNemar b=70 c=25 p=0.0000 (n=290)
+  gnn_g64_knn_cv vs mil_g64_cv: Δf1=+0.033 | McNemar b=45 c=32 p=0.1711 (n=290)
+  gnn_g64_knn_cv vs whole_text_g64_cv: Δf1=+0.160 | McNemar b=67 c=45 p=0.0467 (n=290)
+  gnn_g64_sequential_cv vs mil_g128_cv: Δf1=+0.111 | McNemar b=78 c=52 p=0.0279 (n=290)
+  gnn_g64_sequential_cv vs mil_g64_cv: Δf1=-0.004 | McNemar b=37 c=43 p=0.5764 (n=290)
+  gnn_g64_sequential_cv vs whole_text_g64_cv: Δf1=+0.123 | McNemar b=61 c=58 p=0.8546 (n=290)
+  mil_g128_cv vs mil_g64_cv: Δf1=-0.115 | McNemar b=36 c=68 p=0.0022 (n=290)
+  mil_g128_cv vs whole_text_g64_cv: Δf1=+0.012 | McNemar b=56 c=79 p=0.0579 (n=290)
+  mil_g64_cv vs whole_text_g64_cv: Δf1=+0.127 | McNemar b=65 c=56 p=0.4672 (n=290)
+[analyze] figura -> results/analysis/fig_daic_cv_bars.png
+[analyze] figura -> results/analysis/fig_daic_cv_box.png
+[analyze] figura -> results/analysis/fig_daic_cv_cost.png
+
+==========================================================================
+ECTHR [ufficiale]  —  media ± std sui seed
+==========================================================================
+setup                                  auprc       auroc    f1_macro    f1_micro  infer.ms
+ecthr_gnn_g512_both              0.538±0.025 0.903±0.010 0.477±0.017 0.524±0.031      3.01  (n=5)
+ecthr_gnn_g512_knn               0.553±0.024 0.906±0.005 0.493±0.011 0.545±0.010      3.13  (n=5)
+ecthr_gnn_g512_sequential        0.511±0.015 0.893±0.007 0.455±0.020 0.482±0.040      1.85  (n=5)
+ecthr_mil_g512                   0.612±0.008 0.936±0.003 0.571±0.010 0.633±0.011      0.55  (n=5)
+ecthr_whole_text_g64             0.215±0.164 0.608±0.141 0.206±0.137 0.321±0.125    329.14  (n=5)
+[analyze] tabella -> results/analysis/table_ecthr_ufficiale.csv
+
+ECTHR [ufficiale] — confronto a coppie (stesso protocollo)
+  gnn_g512_both vs gnn_g512_knn: Δf1_macro=-0.016 | McNemar b=361 c=442 p=0.0047 (n=5000)
+  gnn_g512_both vs gnn_g512_sequential: Δf1_macro=+0.022 | McNemar b=401 c=273 p=0.0000 (n=5000)
+  gnn_g512_both vs mil_g512: Δf1_macro=-0.094 | McNemar b=203 c=997 p=0.0000 (n=5000)
+  gnn_g512_both vs whole_text_g64: Δf1_macro=+0.271 | McNemar b=857 c=129 p=0.0000 (n=5000)
+  gnn_g512_knn vs gnn_g512_sequential: Δf1_macro=+0.038 | McNemar b=467 c=258 p=0.0000 (n=5000)
+  gnn_g512_knn vs mil_g512: Δf1_macro=-0.078 | McNemar b=224 c=937 p=0.0000 (n=5000)
+  gnn_g512_knn vs whole_text_g64: Δf1_macro=+0.287 | McNemar b=958 c=149 p=0.0000 (n=5000)
+  gnn_g512_sequential vs mil_g512: Δf1_macro=-0.116 | McNemar b=187 c=1109 p=0.0000 (n=5000)
+  gnn_g512_sequential vs whole_text_g64: Δf1_macro=+0.249 | McNemar b=776 c=176 p=0.0000 (n=5000)
+  mil_g512 vs whole_text_g64: Δf1_macro=+0.365 | McNemar b=1620 c=98 p=0.0000 (n=5000)
+[analyze] figura -> results/analysis/fig_ecthr_ufficiale_bars.png
+[analyze] figura -> results/analysis/fig_ecthr_ufficiale_box.png
+[analyze] figura -> results/analysis/fig_ecthr_ufficiale_cost.png
+
+==========================================================================
+IMCS21 [ufficiale]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc    f1_macro         mcc  infer.ms
+imcs21_gnn_g128_both             0.598±0.010 0.655±0.011 0.929±0.003 0.612±0.012 0.607±0.011 0.550±0.010      3.09  (n=5)
+imcs21_gnn_g128_knn              0.590±0.014 0.650±0.011 0.928±0.003 0.603±0.009 0.596±0.010 0.542±0.016      3.08  (n=5)
+imcs21_gnn_g128_sequential       0.616±0.013 0.683±0.014 0.934±0.003 0.630±0.010 0.620±0.015 0.571±0.014      1.83  (n=5)
+imcs21_gnn_g64_both              0.589±0.020 0.649±0.019 0.927±0.004 0.602±0.022 0.593±0.021 0.541±0.021      3.27  (n=5)
+imcs21_gnn_g64_knn               0.607±0.011 0.660±0.009 0.928±0.003 0.614±0.013 0.613±0.015 0.560±0.013      3.25  (n=5)
+imcs21_gnn_g64_sequential        0.600±0.013 0.667±0.013 0.929±0.002 0.613±0.012 0.608±0.018 0.554±0.014      1.87  (n=5)
+imcs21_mil_g128                  0.626±0.014 0.695±0.014 0.939±0.003 0.630±0.022 0.628±0.018 0.581±0.016      0.50  (n=5)
+imcs21_mil_g64                   0.612±0.016 0.684±0.009 0.936±0.002 0.618±0.013 0.616±0.016 0.566±0.017      0.50  (n=5)
+imcs21_whole_text_g64            0.697±0.013 0.751±0.007 0.944±0.005 0.707±0.011 0.706±0.012 0.660±0.015     25.15  (n=5)
+[analyze] tabella -> results/analysis/table_imcs21_ufficiale.csv
+
+IMCS21 [ufficiale] — confronto a coppie (stesso protocollo)
+  gnn_g128_both vs gnn_g128_knn: Δf1_macro=+0.011 | McNemar b=467 c=436 p=0.3181 (n=4055)
+  gnn_g128_both vs gnn_g128_sequential: Δf1_macro=-0.012 | McNemar b=414 c=488 p=0.0150 (n=4055)
+  gnn_g128_both vs gnn_g64_both: Δf1_macro=+0.014 | McNemar b=527 c=490 p=0.2589 (n=4055)
+  gnn_g128_both vs gnn_g64_knn: Δf1_macro=-0.006 | McNemar b=518 c=556 p=0.2589 (n=4055)
+  gnn_g128_both vs gnn_g64_sequential: Δf1_macro=-0.001 | McNemar b=530 c=539 p=0.8067 (n=4055)
+  gnn_g128_both vs mil_g128: Δf1_macro=-0.020 | McNemar b=380 c=493 p=0.0001 (n=4055)
+  gnn_g128_both vs mil_g64: Δf1_macro=-0.009 | McNemar b=481 c=540 p=0.0694 (n=4055)
+  gnn_g128_both vs whole_text_g64: Δf1_macro=-0.099 | McNemar b=417 c=820 p=0.0000 (n=4055)
+  gnn_g128_knn vs gnn_g128_sequential: Δf1_macro=-0.024 | McNemar b=398 c=503 p=0.0005 (n=4055)
+  gnn_g128_knn vs gnn_g64_both: Δf1_macro=+0.003 | McNemar b=517 c=511 p=0.8761 (n=4055)
+  gnn_g128_knn vs gnn_g64_knn: Δf1_macro=-0.017 | McNemar b=500 c=569 p=0.0375 (n=4055)
+  gnn_g128_knn vs gnn_g64_sequential: Δf1_macro=-0.012 | McNemar b=496 c=536 p=0.2247 (n=4055)
+  gnn_g128_knn vs mil_g128: Δf1_macro=-0.032 | McNemar b=375 c=519 p=0.0000 (n=4055)
+  gnn_g128_knn vs mil_g64: Δf1_macro=-0.020 | McNemar b=496 c=586 p=0.0068 (n=4055)
+  gnn_g128_knn vs whole_text_g64: Δf1_macro=-0.110 | McNemar b=433 c=867 p=0.0000 (n=4055)
+  gnn_g128_sequential vs gnn_g64_both: Δf1_macro=+0.026 | McNemar b=541 c=430 p=0.0004 (n=4055)
+  gnn_g128_sequential vs gnn_g64_knn: Δf1_macro=+0.006 | McNemar b=510 c=474 p=0.2645 (n=4055)
+  gnn_g128_sequential vs gnn_g64_sequential: Δf1_macro=+0.011 | McNemar b=514 c=449 p=0.0391 (n=4055)
+  gnn_g128_sequential vs mil_g128: Δf1_macro=-0.008 | McNemar b=384 c=423 p=0.1810 (n=4055)
+  gnn_g128_sequential vs mil_g64: Δf1_macro=+0.004 | McNemar b=464 c=449 p=0.6431 (n=4055)
+  gnn_g128_sequential vs whole_text_g64: Δf1_macro=-0.086 | McNemar b=439 c=768 p=0.0000 (n=4055)
+  gnn_g64_both vs gnn_g64_knn: Δf1_macro=-0.020 | McNemar b=408 c=483 p=0.0131 (n=4055)
+  gnn_g64_both vs gnn_g64_sequential: Δf1_macro=-0.015 | McNemar b=461 c=507 p=0.1480 (n=4055)
+  gnn_g64_both vs mil_g128: Δf1_macro=-0.034 | McNemar b=396 c=546 p=0.0000 (n=4055)
+  gnn_g64_both vs mil_g64: Δf1_macro=-0.023 | McNemar b=415 c=511 p=0.0018 (n=4055)
+  gnn_g64_both vs whole_text_g64: Δf1_macro=-0.113 | McNemar b=423 c=863 p=0.0000 (n=4055)
+  gnn_g64_knn vs gnn_g64_sequential: Δf1_macro=+0.005 | McNemar b=492 c=463 p=0.3649 (n=4055)
+  gnn_g64_knn vs mil_g128: Δf1_macro=-0.014 | McNemar b=453 c=528 p=0.0181 (n=4055)
+  gnn_g64_knn vs mil_g64: Δf1_macro=-0.003 | McNemar b=443 c=464 p=0.5067 (n=4055)
+  gnn_g64_knn vs whole_text_g64: Δf1_macro=-0.092 | McNemar b=442 c=807 p=0.0000 (n=4055)
+  gnn_g64_sequential vs mil_g128: Δf1_macro=-0.019 | McNemar b=413 c=517 p=0.0007 (n=4055)
+  gnn_g64_sequential vs mil_g64: Δf1_macro=-0.008 | McNemar b=461 c=511 p=0.1160 (n=4055)
+  gnn_g64_sequential vs whole_text_g64: Δf1_macro=-0.097 | McNemar b=438 c=832 p=0.0000 (n=4055)
+  mil_g128 vs mil_g64: Δf1_macro=+0.012 | McNemar b=464 c=410 p=0.0730 (n=4055)
+  mil_g128 vs whole_text_g64: Δf1_macro=-0.078 | McNemar b=429 c=719 p=0.0000 (n=4055)
+  mil_g64 vs whole_text_g64: Δf1_macro=-0.090 | McNemar b=442 c=786 p=0.0000 (n=4055)
+[analyze] figura -> results/analysis/fig_imcs21_ufficiale_bars.png
+[analyze] figura -> results/analysis/fig_imcs21_ufficiale_box.png
+[analyze] figura -> results/analysis/fig_imcs21_ufficiale_cost.png
+
+==========================================================================
+IMCS21 [cv]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc    f1_macro         mcc  infer.ms
+imcs21_gnn_g128_both_cv          0.615±0.017 0.671±0.013 0.931±0.003 0.624±0.014 0.625±0.016 0.570±0.018      3.12  (n=10)
+imcs21_gnn_g128_knn_cv           0.608±0.024 0.669±0.021 0.931±0.006 0.621±0.023 0.615±0.025 0.563±0.027      3.07  (n=10)
+imcs21_gnn_g128_sequential_cv    0.614±0.018 0.681±0.014 0.934±0.004 0.615±0.020 0.615±0.018 0.569±0.020      2.65  (n=10)
+imcs21_gnn_g64_both_cv           0.608±0.016 0.668±0.012 0.930±0.002 0.618±0.012 0.617±0.017 0.562±0.016      3.26  (n=10)
+imcs21_gnn_g64_knn_cv            0.598±0.020 0.658±0.017 0.928±0.004 0.609±0.018 0.601±0.017 0.552±0.022      3.25  (n=10)
+imcs21_gnn_g64_sequential_cv     0.615±0.025 0.678±0.019 0.933±0.003 0.625±0.027 0.619±0.025 0.570±0.028      2.69  (n=10)
+imcs21_mil_g128_cv               0.628±0.031 0.702±0.015 0.941±0.004 0.645±0.025 0.634±0.027 0.586±0.033      0.82  (n=10)
+imcs21_mil_g64_cv                0.627±0.014 0.699±0.015 0.940±0.002 0.636±0.012 0.631±0.011 0.584±0.015      0.89  (n=10)
+imcs21_whole_text_g64_cv         0.681±0.020 0.757±0.019 0.947±0.007 0.695±0.024 0.696±0.023 0.643±0.022     38.05  (n=10)
+[analyze] tabella -> results/analysis/table_imcs21_cv.csv
+
+IMCS21 [cv] — confronto a coppie (stesso protocollo)
+  gnn_g128_both_cv vs gnn_g128_knn_cv: Δf1_macro=+0.010 | McNemar b=652 c=609 p=0.2369 (n=6270)
+  gnn_g128_both_cv vs gnn_g128_sequential_cv: Δf1_macro=+0.010 | McNemar b=710 c=705 p=0.9153 (n=6270)
+  gnn_g128_both_cv vs gnn_g64_both_cv: Δf1_macro=+0.008 | McNemar b=834 c=790 p=0.2860 (n=6270)
+  gnn_g128_both_cv vs gnn_g64_knn_cv: Δf1_macro=+0.024 | McNemar b=856 c=751 p=0.0095 (n=6270)
+  gnn_g128_both_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.006 | McNemar b=821 c=817 p=0.9409 (n=6270)
+  gnn_g128_both_cv vs mil_g128_cv: Δf1_macro=-0.009 | McNemar b=670 c=751 p=0.0338 (n=6270)
+  gnn_g128_both_cv vs mil_g64_cv: Δf1_macro=-0.006 | McNemar b=765 c=839 p=0.0683 (n=6270)
+  gnn_g128_both_cv vs whole_text_g64_cv: Δf1_macro=-0.071 | McNemar b=792 c=1205 p=0.0000 (n=6270)
+  gnn_g128_knn_cv vs gnn_g128_sequential_cv: Δf1_macro=+0.000 | McNemar b=704 c=742 p=0.3305 (n=6270)
+  gnn_g128_knn_cv vs gnn_g64_both_cv: Δf1_macro=-0.002 | McNemar b=834 c=833 p=1.0000 (n=6270)
+  gnn_g128_knn_cv vs gnn_g64_knn_cv: Δf1_macro=+0.014 | McNemar b=811 c=749 p=0.1225 (n=6270)
+  gnn_g128_knn_cv vs gnn_g64_sequential_cv: Δf1_macro=-0.004 | McNemar b=774 c=813 p=0.3401 (n=6270)
+  gnn_g128_knn_cv vs mil_g128_cv: Δf1_macro=-0.019 | McNemar b=634 c=758 p=0.0010 (n=6270)
+  gnn_g128_knn_cv vs mil_g64_cv: Δf1_macro=-0.015 | McNemar b=700 c=817 p=0.0029 (n=6270)
+  gnn_g128_knn_cv vs whole_text_g64_cv: Δf1_macro=-0.080 | McNemar b=789 c=1245 p=0.0000 (n=6270)
+  gnn_g128_sequential_cv vs gnn_g64_both_cv: Δf1_macro=-0.002 | McNemar b=843 c=804 p=0.3491 (n=6270)
+  gnn_g128_sequential_cv vs gnn_g64_knn_cv: Δf1_macro=+0.014 | McNemar b=855 c=755 p=0.0136 (n=6270)
+  gnn_g128_sequential_cv vs gnn_g64_sequential_cv: Δf1_macro=-0.004 | McNemar b=763 c=764 p=1.0000 (n=6270)
+  gnn_g128_sequential_cv vs mil_g128_cv: Δf1_macro=-0.019 | McNemar b=617 c=703 p=0.0193 (n=6270)
+  gnn_g128_sequential_cv vs mil_g64_cv: Δf1_macro=-0.016 | McNemar b=732 c=811 p=0.0470 (n=6270)
+  gnn_g128_sequential_cv vs whole_text_g64_cv: Δf1_macro=-0.081 | McNemar b=752 c=1170 p=0.0000 (n=6270)
+  gnn_g64_both_cv vs gnn_g64_knn_cv: Δf1_macro=+0.016 | McNemar b=749 c=688 p=0.1134 (n=6270)
+  gnn_g64_both_cv vs gnn_g64_sequential_cv: Δf1_macro=-0.002 | McNemar b=731 c=771 p=0.3143 (n=6270)
+  gnn_g64_both_cv vs mil_g128_cv: Δf1_macro=-0.017 | McNemar b=705 c=830 p=0.0015 (n=6270)
+  gnn_g64_both_cv vs mil_g64_cv: Δf1_macro=-0.014 | McNemar b=664 c=782 p=0.0021 (n=6270)
+  gnn_g64_both_cv vs whole_text_g64_cv: Δf1_macro=-0.079 | McNemar b=755 c=1212 p=0.0000 (n=6270)
+  gnn_g64_knn_cv vs gnn_g64_sequential_cv: Δf1_macro=-0.018 | McNemar b=711 c=812 p=0.0104 (n=6270)
+  gnn_g64_knn_cv vs mil_g128_cv: Δf1_macro=-0.033 | McNemar b=663 c=849 p=0.0000 (n=6270)
+  gnn_g64_knn_cv vs mil_g64_cv: Δf1_macro=-0.030 | McNemar b=621 c=800 p=0.0000 (n=6270)
+  gnn_g64_knn_cv vs whole_text_g64_cv: Δf1_macro=-0.095 | McNemar b=766 c=1284 p=0.0000 (n=6270)
+  gnn_g64_sequential_cv vs mil_g128_cv: Δf1_macro=-0.015 | McNemar b=669 c=754 p=0.0259 (n=6270)
+  gnn_g64_sequential_cv vs mil_g64_cv: Δf1_macro=-0.012 | McNemar b=620 c=698 p=0.0339 (n=6270)
+  gnn_g64_sequential_cv vs whole_text_g64_cv: Δf1_macro=-0.077 | McNemar b=774 c=1191 p=0.0000 (n=6270)
+  mil_g128_cv vs mil_g64_cv: Δf1_macro=+0.004 | McNemar b=673 c=666 p=0.8698 (n=6270)
+  mil_g128_cv vs whole_text_g64_cv: Δf1_macro=-0.061 | McNemar b=785 c=1117 p=0.0000 (n=6270)
+  mil_g64_cv vs whole_text_g64_cv: Δf1_macro=-0.065 | McNemar b=752 c=1091 p=0.0000 (n=6270)
+[analyze] figura -> results/analysis/fig_imcs21_cv_bars.png
+[analyze] figura -> results/analysis/fig_imcs21_cv_box.png
+[analyze] figura -> results/analysis/fig_imcs21_cv_cost.png
+
+==========================================================================
+MTSAMPLES [ufficiale]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc    f1_macro         mcc  infer.ms
+mtsamples_gnn_g128_both          0.802±0.039 0.857±0.035 0.976±0.004 0.767±0.049 0.767±0.052 0.767±0.046      3.15  (n=5)
+mtsamples_gnn_g128_knn           0.799±0.038 0.846±0.041 0.975±0.005 0.767±0.050 0.763±0.051 0.763±0.045      3.14  (n=5)
+mtsamples_gnn_g128_sequential    0.760±0.049 0.820±0.049 0.972±0.005 0.733±0.045 0.704±0.064 0.718±0.056      1.96  (n=5)
+mtsamples_gnn_g64_both           0.804±0.041 0.844±0.036 0.974±0.005 0.762±0.035 0.759±0.043 0.769±0.046      3.34  (n=5)
+mtsamples_gnn_g64_knn            0.775±0.048 0.842±0.047 0.972±0.008 0.748±0.044 0.737±0.050 0.736±0.054      3.31  (n=5)
+mtsamples_gnn_g64_sequential     0.774±0.048 0.845±0.037 0.973±0.006 0.765±0.048 0.744±0.053 0.737±0.054      1.99  (n=5)
+mtsamples_mil_g128               0.767±0.036 0.807±0.036 0.970±0.007 0.722±0.049 0.706±0.042 0.728±0.042      0.64  (n=5)
+mtsamples_mil_g64                0.749±0.027 0.798±0.047 0.968±0.007 0.720±0.017 0.705±0.025 0.707±0.029      0.65  (n=5)
+mtsamples_whole_text_g64         0.848±0.029 0.863±0.022 0.978±0.003 0.784±0.033 0.790±0.036 0.820±0.034     26.10  (n=5)
+[analyze] tabella -> results/analysis/table_mtsamples_ufficiale.csv
+
+MTSAMPLES [ufficiale] — confronto a coppie (stesso protocollo)
+  gnn_g128_both vs gnn_g128_knn: Δf1_macro=+0.004 | McNemar b=52 c=49 p=0.8424 (n=890)
+  gnn_g128_both vs gnn_g128_sequential: Δf1_macro=+0.062 | McNemar b=95 c=57 p=0.0026 (n=890)
+  gnn_g128_both vs gnn_g64_both: Δf1_macro=+0.008 | McNemar b=63 c=65 p=0.9296 (n=890)
+  gnn_g128_both vs gnn_g64_knn: Δf1_macro=+0.030 | McNemar b=93 c=69 p=0.0704 (n=890)
+  gnn_g128_both vs gnn_g64_sequential: Δf1_macro=+0.022 | McNemar b=95 c=70 p=0.0614 (n=890)
+  gnn_g128_both vs mil_g128: Δf1_macro=+0.061 | McNemar b=87 c=56 p=0.0118 (n=890)
+  gnn_g128_both vs mil_g64: Δf1_macro=+0.061 | McNemar b=108 c=61 p=0.0004 (n=890)
+  gnn_g128_both vs whole_text_g64: Δf1_macro=-0.023 | McNemar b=55 c=96 p=0.0011 (n=890)
+  gnn_g128_knn vs gnn_g128_sequential: Δf1_macro=+0.059 | McNemar b=81 c=46 p=0.0024 (n=890)
+  gnn_g128_knn vs gnn_g64_both: Δf1_macro=+0.004 | McNemar b=61 c=66 p=0.7228 (n=890)
+  gnn_g128_knn vs gnn_g64_knn: Δf1_macro=+0.026 | McNemar b=89 c=68 p=0.1102 (n=890)
+  gnn_g128_knn vs gnn_g64_sequential: Δf1_macro=+0.019 | McNemar b=92 c=70 p=0.0987 (n=890)
+  gnn_g128_knn vs mil_g128: Δf1_macro=+0.057 | McNemar b=78 c=50 p=0.0167 (n=890)
+  gnn_g128_knn vs mil_g64: Δf1_macro=+0.058 | McNemar b=102 c=58 p=0.0006 (n=890)
+  gnn_g128_knn vs whole_text_g64: Δf1_macro=-0.027 | McNemar b=60 c=104 p=0.0007 (n=890)
+  gnn_g128_sequential vs gnn_g64_both: Δf1_macro=-0.055 | McNemar b=49 c=89 p=0.0008 (n=890)
+  gnn_g128_sequential vs gnn_g64_knn: Δf1_macro=-0.033 | McNemar b=63 c=77 p=0.2718 (n=890)
+  gnn_g128_sequential vs gnn_g64_sequential: Δf1_macro=-0.040 | McNemar b=82 c=95 p=0.3671 (n=890)
+  gnn_g128_sequential vs mil_g128: Δf1_macro=-0.002 | McNemar b=61 c=68 p=0.5975 (n=890)
+  gnn_g128_sequential vs mil_g64: Δf1_macro=-0.001 | McNemar b=74 c=65 p=0.4976 (n=890)
+  gnn_g128_sequential vs whole_text_g64: Δf1_macro=-0.085 | McNemar b=50 c=129 p=0.0000 (n=890)
+  gnn_g64_both vs gnn_g64_knn: Δf1_macro=+0.022 | McNemar b=63 c=37 p=0.0120 (n=890)
+  gnn_g64_both vs gnn_g64_sequential: Δf1_macro=+0.015 | McNemar b=90 c=63 p=0.0352 (n=890)
+  gnn_g64_both vs mil_g128: Δf1_macro=+0.053 | McNemar b=90 c=57 p=0.0081 (n=890)
+  gnn_g64_both vs mil_g64: Δf1_macro=+0.054 | McNemar b=95 c=46 p=0.0000 (n=890)
+  gnn_g64_both vs whole_text_g64: Δf1_macro=-0.031 | McNemar b=54 c=93 p=0.0016 (n=890)
+  gnn_g64_knn vs gnn_g64_sequential: Δf1_macro=-0.007 | McNemar b=80 c=79 p=1.0000 (n=890)
+  gnn_g64_knn vs mil_g128: Δf1_macro=+0.031 | McNemar b=79 c=72 p=0.6255 (n=890)
+  gnn_g64_knn vs mil_g64: Δf1_macro=+0.032 | McNemar b=91 c=68 p=0.0807 (n=890)
+  gnn_g64_knn vs whole_text_g64: Δf1_macro=-0.053 | McNemar b=53 c=118 p=0.0000 (n=890)
+  gnn_g64_sequential vs mil_g128: Δf1_macro=+0.038 | McNemar b=88 c=82 p=0.7015 (n=890)
+  gnn_g64_sequential vs mil_g64: Δf1_macro=+0.039 | McNemar b=97 c=75 p=0.1091 (n=890)
+  gnn_g64_sequential vs whole_text_g64: Δf1_macro=-0.045 | McNemar b=61 c=127 p=0.0000 (n=890)
+  mil_g128 vs mil_g64: Δf1_macro=+0.001 | McNemar b=74 c=58 p=0.1915 (n=890)
+  mil_g128 vs whole_text_g64: Δf1_macro=-0.084 | McNemar b=51 c=123 p=0.0000 (n=890)
+  mil_g64 vs whole_text_g64: Δf1_macro=-0.084 | McNemar b=47 c=135 p=0.0000 (n=890)
+[analyze] figura -> results/analysis/fig_mtsamples_ufficiale_bars.png
+[analyze] figura -> results/analysis/fig_mtsamples_ufficiale_box.png
+[analyze] figura -> results/analysis/fig_mtsamples_ufficiale_cost.png
+
+==========================================================================
+MTSAMPLES [cv]  —  media ± std sui seed
+==========================================================================
+setup                                    acc       auprc       auroc     bal_acc    f1_macro         mcc  infer.ms
+mtsamples_gnn_g128_both_cv       0.786±0.028 0.838±0.026 0.975±0.005 0.738±0.034 0.736±0.034 0.748±0.032      3.13  (n=10)
+mtsamples_gnn_g128_knn_cv        0.794±0.063 0.840±0.044 0.972±0.008 0.758±0.052 0.751±0.061 0.758±0.072      3.13  (n=10)
+mtsamples_gnn_g128_sequential_cv 0.781±0.036 0.842±0.035 0.974±0.008 0.767±0.024 0.751±0.029 0.743±0.040      2.79  (n=10)
+mtsamples_gnn_g64_both_cv        0.779±0.035 0.818±0.036 0.970±0.006 0.748±0.039 0.735±0.038 0.739±0.040      3.34  (n=10)
+mtsamples_gnn_g64_knn_cv         0.787±0.038 0.835±0.035 0.973±0.006 0.747±0.032 0.744±0.043 0.748±0.043      3.34  (n=10)
+mtsamples_gnn_g64_sequential_cv  0.779±0.036 0.825±0.035 0.973±0.006 0.749±0.039 0.734±0.039 0.741±0.042      2.89  (n=10)
+mtsamples_mil_g128_cv            0.753±0.038 0.795±0.039 0.969±0.008 0.719±0.040 0.705±0.037 0.710±0.044      0.92  (n=10)
+mtsamples_mil_g64_cv             0.748±0.027 0.793±0.042 0.968±0.007 0.728±0.021 0.709±0.030 0.705±0.029      1.01  (n=10)
+mtsamples_whole_text_g64_cv      0.852±0.024 0.867±0.023 0.978±0.003 0.783±0.029 0.792±0.031 0.824±0.029     38.19  (n=10)
+[analyze] tabella -> results/analysis/table_mtsamples_cv.csv
+
+MTSAMPLES [cv] — confronto a coppie (stesso protocollo)
+  gnn_g128_both_cv vs gnn_g128_knn_cv: Δf1_macro=-0.016 | McNemar b=120 c=135 p=0.3807 (n=1780)
+  gnn_g128_both_cv vs gnn_g128_sequential_cv: Δf1_macro=-0.015 | McNemar b=155 c=146 p=0.6448 (n=1780)
+  gnn_g128_both_cv vs gnn_g64_both_cv: Δf1_macro=+0.001 | McNemar b=154 c=141 p=0.4848 (n=1780)
+  gnn_g128_both_cv vs gnn_g64_knn_cv: Δf1_macro=-0.008 | McNemar b=146 c=147 p=1.0000 (n=1780)
+  gnn_g128_both_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.002 | McNemar b=172 c=160 p=0.5461 (n=1780)
+  gnn_g128_both_cv vs mil_g128_cv: Δf1_macro=+0.031 | McNemar b=190 c=131 p=0.0012 (n=1780)
+  gnn_g128_both_cv vs mil_g64_cv: Δf1_macro=+0.027 | McNemar b=213 c=145 p=0.0004 (n=1780)
+  gnn_g128_both_cv vs whole_text_g64_cv: Δf1_macro=-0.056 | McNemar b=103 c=220 p=0.0000 (n=1780)
+  gnn_g128_knn_cv vs gnn_g128_sequential_cv: Δf1_macro=+0.000 | McNemar b=145 c=121 p=0.1583 (n=1780)
+  gnn_g128_knn_cv vs gnn_g64_both_cv: Δf1_macro=+0.017 | McNemar b=146 c=118 p=0.0964 (n=1780)
+  gnn_g128_knn_cv vs gnn_g64_knn_cv: Δf1_macro=+0.007 | McNemar b=146 c=132 p=0.4356 (n=1780)
+  gnn_g128_knn_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.017 | McNemar b=158 c=131 p=0.1260 (n=1780)
+  gnn_g128_knn_cv vs mil_g128_cv: Δf1_macro=+0.046 | McNemar b=186 c=112 p=0.0000 (n=1780)
+  gnn_g128_knn_cv vs mil_g64_cv: Δf1_macro=+0.042 | McNemar b=215 c=132 p=0.0000 (n=1780)
+  gnn_g128_knn_cv vs whole_text_g64_cv: Δf1_macro=-0.041 | McNemar b=109 c=211 p=0.0000 (n=1780)
+  gnn_g128_sequential_cv vs gnn_g64_both_cv: Δf1_macro=+0.016 | McNemar b=147 c=143 p=0.8602 (n=1780)
+  gnn_g128_sequential_cv vs gnn_g64_knn_cv: Δf1_macro=+0.007 | McNemar b=146 c=156 p=0.6046 (n=1780)
+  gnn_g128_sequential_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.017 | McNemar b=163 c=160 p=0.9114 (n=1780)
+  gnn_g128_sequential_cv vs mil_g128_cv: Δf1_macro=+0.046 | McNemar b=189 c=139 p=0.0067 (n=1780)
+  gnn_g128_sequential_cv vs mil_g64_cv: Δf1_macro=+0.042 | McNemar b=201 c=142 p=0.0017 (n=1780)
+  gnn_g128_sequential_cv vs whole_text_g64_cv: Δf1_macro=-0.041 | McNemar b=117 c=243 p=0.0000 (n=1780)
+  gnn_g64_both_cv vs gnn_g64_knn_cv: Δf1_macro=-0.009 | McNemar b=129 c=143 p=0.4306 (n=1780)
+  gnn_g64_both_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.001 | McNemar b=127 c=128 p=1.0000 (n=1780)
+  gnn_g64_both_cv vs mil_g128_cv: Δf1_macro=+0.030 | McNemar b=201 c=155 p=0.0170 (n=1780)
+  gnn_g64_both_cv vs mil_g64_cv: Δf1_macro=+0.026 | McNemar b=201 c=146 p=0.0037 (n=1780)
+  gnn_g64_both_cv vs whole_text_g64_cv: Δf1_macro=-0.057 | McNemar b=107 c=237 p=0.0000 (n=1780)
+  gnn_g64_knn_cv vs gnn_g64_sequential_cv: Δf1_macro=+0.010 | McNemar b=153 c=140 p=0.4833 (n=1780)
+  gnn_g64_knn_cv vs mil_g128_cv: Δf1_macro=+0.039 | McNemar b=209 c=149 p=0.0018 (n=1780)
+  gnn_g64_knn_cv vs mil_g64_cv: Δf1_macro=+0.035 | McNemar b=205 c=136 p=0.0002 (n=1780)
+  gnn_g64_knn_cv vs whole_text_g64_cv: Δf1_macro=-0.048 | McNemar b=99 c=215 p=0.0000 (n=1780)
+  gnn_g64_sequential_cv vs mil_g128_cv: Δf1_macro=+0.029 | McNemar b=194 c=147 p=0.0126 (n=1780)
+  gnn_g64_sequential_cv vs mil_g64_cv: Δf1_macro=+0.025 | McNemar b=204 c=148 p=0.0033 (n=1780)
+  gnn_g64_sequential_cv vs whole_text_g64_cv: Δf1_macro=-0.058 | McNemar b=106 c=235 p=0.0000 (n=1780)
+  mil_g128_cv vs mil_g64_cv: Δf1_macro=-0.004 | McNemar b=149 c=140 p=0.6380 (n=1780)
+  mil_g128_cv vs whole_text_g64_cv: Δf1_macro=-0.087 | McNemar b=100 c=276 p=0.0000 (n=1780)
+  mil_g64_cv vs whole_text_g64_cv: Δf1_macro=-0.083 | McNemar b=103 c=288 p=0.0000 (n=1780)
+[analyze] figura -> results/analysis/fig_mtsamples_cv_bars.png
+[analyze] figura -> results/analysis/fig_mtsamples_cv_box.png
+[analyze] figura -> results/analysis/fig_mtsamples_cv_cost.png
+
+[analyze] output in results/analysis/
+NB: blocchi '[ufficiale]' e '[cv]' sono analizzati SEPARATAMENTE:
+    i confronti restano sempre dentro lo stesso protocollo.
